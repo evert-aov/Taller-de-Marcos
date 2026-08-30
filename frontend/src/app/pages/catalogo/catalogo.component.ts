@@ -213,6 +213,8 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     };
   }
 
+  downloadingImage = signal<boolean>(false);
+
   downloadPdf() {
     const url = this.catalogoService.getPdfUrl(this.currentFilter);
     window.open(url, '_blank');
@@ -226,6 +228,42 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  }
+
+  async downloadImage() {
+    if (this.downloadingImage()) return;
+    this.downloadingImage.set(true);
+
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const element = document.getElementById('catalogExportArea');
+      if (!element) {
+        throw new Error('No se encontró el contenedor del catálogo');
+      }
+
+      const canvas = await html2canvas(element, {
+        scale: 2.5, // High resolution (Retina / 2.5x DPI)
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#FAF6F0',
+        logging: false,
+        scrollX: 0,
+        scrollY: -window.scrollY,
+      });
+
+      const dataUrl = canvas.toDataURL('image/png', 1.0);
+      const link = document.createElement('a');
+      link.download = `catalogo-marcos-hd-${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Error al generar imagen del catálogo', err);
+      alert('Error al generar la imagen en alta resolución. Intente nuevamente.');
+    } finally {
+      this.downloadingImage.set(false);
+    }
   }
 
   openDetail(marco: Marco) {

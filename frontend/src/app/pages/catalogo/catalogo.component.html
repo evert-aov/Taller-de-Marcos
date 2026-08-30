@@ -48,12 +48,21 @@
         <!-- Export / Download Buttons -->
         <div class="export-actions">
           <button class="btn btn-pdf" (click)="downloadPdf()" title="Descargar catálogo en PDF">
-            <ng-icon name="heroArrowDownTray" size="18"></ng-icon>
-            <span>Descargar Catálogo (PDF)</span>
+            <ng-icon name="heroArrowDownTray" size="16"></ng-icon>
+            <span>Descargar PDF</span>
           </button>
           <button class="btn btn-html" (click)="downloadHtml()" title="Descargar catálogo en HTML">
-            <ng-icon name="heroGlobeAlt" size="18"></ng-icon>
-            <span>Descargar Catálogo (HTML)</span>
+            <ng-icon name="heroGlobeAlt" size="16"></ng-icon>
+            <span>Descargar HTML</span>
+          </button>
+          <button class="btn btn-img" (click)="downloadImage()" [disabled]="downloadingImage()" title="Descargar catálogo en Imagen de Alta Resolución (HD)">
+            @if (downloadingImage()) {
+              <ng-icon name="heroArrowPath" size="16" class="spin-icon"></ng-icon>
+              <span>Generando HD...</span>
+            } @else {
+              <ng-icon name="heroPhoto" size="16"></ng-icon>
+              <span>Descargar Imagen (HD)</span>
+            }
           </button>
         </div>
       </div>
@@ -61,7 +70,7 @@
   </section>
 
   <!-- Main Content & Filters -->
-  <main class="container catalog-main">
+  <main id="catalogExportArea" class="container catalog-main">
     <!-- Category Chips Bar -->
     <div class="category-tabs-bar">
       <button
