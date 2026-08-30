@@ -12,11 +12,12 @@ import {
   ParseUUIDPipe,
   UseInterceptors,
   UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
 import { MarcoService } from '../services/marco.service';
+import { R2StorageService } from '../services/r2-storage.service';
 import { CreateMarcoDto } from '../dto/create-marco.dto';
 import { UpdateMarcoDto } from '../dto/update-marco.dto';
 import { FilterMarcoDto } from '../dto/filter-marco.dto';
@@ -24,7 +25,10 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 @Controller('api/marcos')
 export class MarcoController {
-  constructor(private readonly marcoService: MarcoService) {}
+  constructor(
+    private readonly marcoService: MarcoService,
+    private readonly r2StorageService: R2StorageService,
+  ) {}
 
   @Get()
   findAll(@Query() filter: FilterMarcoDto) {
@@ -72,27 +76,24 @@ export class MarcoController {
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          cb(null, `marco-${uniqueSuffix}${ext}`);
-        },
-      }),
+      storage: memoryStorage(),
       fileFilter: (req, file, cb) => {
         if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
-          return cb(new Error('Solo se permiten archivos de imagen'), false);
+          return cb(new BadRequestException('Solo se permiten archivos de imagen (jpg, jpeg, png, gif, webp)'), false);
         }
         cb(null, true);
       },
-      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
     }),
   )
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('No se ha proporcionado ningún archivo');
+    }
+    const result = await this.r2StorageService.uploadImage(file);
     return {
-      url: `/uploads/${file.filename}`,
-      filename: file.filename,
+      url: result.url,
+      key: result.key,
     };
   }
 }
