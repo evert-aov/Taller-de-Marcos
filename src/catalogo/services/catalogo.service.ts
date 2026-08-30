@@ -107,21 +107,20 @@ export class CatalogoService {
     }
     header {
       text-align: center;
-      padding: 40px 20px;
+      padding: 18px 20px;
       background: linear-gradient(135deg, #5C2C0B 0%, #8B4513 100%);
       color: #FFF8EE;
-      border-radius: 16px;
-      margin-bottom: 35px;
-      box-shadow: 0 10px 25px rgba(92, 44, 11, 0.2);
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(92, 44, 11, 0.15);
     }
     header h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
+      font-size: 1.5rem;
+      margin-bottom: 4px;
       font-weight: 700;
-      letter-spacing: 0.5px;
     }
     header p {
-      font-size: 1.1rem;
+      font-size: 0.9rem;
       opacity: 0.9;
       max-width: 650px;
       margin: 0 auto;
@@ -130,40 +129,52 @@ export class CatalogoService {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 25px;
-      padding: 12px 20px;
+      margin-bottom: 18px;
+      padding: 10px 18px;
       background: #FFFFFF;
-      border-radius: 10px;
+      border-radius: 8px;
       border: 1px solid var(--border);
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       color: var(--muted);
     }
     .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
     .card {
       background: var(--card-bg);
-      border-radius: 14px;
+      border-radius: 10px;
       overflow: hidden;
       border: 1px solid var(--border);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
       display: flex;
-      flex-direction: column;
-      transition: transform 0.2s, box-shadow 0.2s;
+      flex-direction: row;
+      min-height: 125px;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
     .image-wrapper {
       position: relative;
-      width: 100%;
-      height: 220px;
-      background: #F3ECE6;
+      width: 220px;
+      min-width: 220px;
+      max-width: 220px;
+      height: 130px;
+      background: #FAF7F2;
       overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid var(--border);
     }
     .image-wrapper img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      background: #FAF7F2;
     }
     .placeholder-img {
       width: 100%;
@@ -171,17 +182,17 @@ export class CatalogoService {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
+      font-size: 0.95rem;
       color: var(--muted);
       font-weight: 600;
     }
     .badge {
       position: absolute;
-      top: 12px;
-      right: 12px;
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 0.75rem;
+      top: 8px;
+      right: 8px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -195,54 +206,83 @@ export class CatalogoService {
       color: #FFFFFF;
     }
     .card-body {
-      padding: 20px;
+      padding: 12px 18px;
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
       flex-grow: 1;
+      min-width: 0;
     }
     .category-tag {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--accent);
       text-transform: uppercase;
       font-weight: 700;
-      letter-spacing: 1px;
-      margin-bottom: 5px;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
     }
     .card-title {
-      font-size: 1.25rem;
+      font-size: 1.15rem;
       color: var(--primary-dark);
-      margin-bottom: 12px;
-      font-weight: 600;
+      margin-bottom: 6px;
+      font-weight: 700;
+      line-height: 1.2;
     }
     .specs {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--muted);
-      margin-bottom: 15px;
-      flex-grow: 1;
+      margin-bottom: 6px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
     }
     .specs p {
-      margin-bottom: 4px;
+      margin-bottom: 0;
     }
     .specs strong {
       color: var(--text);
     }
+    .carton-badge {
+      font-size: 0.78rem;
+      color: var(--primary-dark);
+      background: #FEF3C7;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      display: inline-block;
+      font-weight: 600;
+      border: 1px dashed #D97706;
+    }
     .price-row {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
       border-top: 1px solid var(--border);
-      padding-top: 15px;
-      margin-top: auto;
+      padding-top: 6px;
+      margin-top: 4px;
     }
     .price-label {
-      font-size: 0.9rem;
+      font-size: 0.82rem;
       color: var(--muted);
       font-weight: 500;
     }
     .price-value {
-      font-size: 1.4rem;
-      font-weight: 700;
+      font-size: 1.25rem;
+      font-weight: 800;
       color: var(--primary);
+    }
+    @media (max-width: 600px) {
+      .card {
+        flex-direction: column;
+      }
+      .image-wrapper {
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
+        height: 150px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
     }
     .actions-bar {
       margin-bottom: 20px;

@@ -91,17 +91,17 @@
 }
 
 /* ==========================================================================
-   Hero Banner
+   Hero Banner - Compact & Mobile Optimized
    ========================================================================== */
 .hero-banner {
   background: linear-gradient(135deg, #2b1103 0%, #451a03 35%, #78350f 100%);
   color: #fffaf0;
-  padding: 68px 0;
+  padding: 24px 0;
   position: relative;
   overflow: hidden;
 
   @media (max-width: 768px) {
-    padding: 40px 0;
+    padding: 14px 0;
   }
 
   &::before {
@@ -125,48 +125,57 @@
   .hero-tag {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     background: rgba(254, 243, 199, 0.15);
     border: 1px solid rgba(254, 243, 199, 0.3);
     color: #fde68a;
-    padding: 6px 16px;
+    padding: 3px 10px;
     border-radius: var(--radius-full);
-    font-size: 0.82rem;
+    font-size: 0.74rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 16px;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+
+    @media (max-width: 640px) {
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      margin-bottom: 6px;
+    }
   }
 
   h2 {
-    font-size: 2.8rem;
-    line-height: 1.18;
-    margin-bottom: 16px;
+    font-size: 1.65rem;
+    line-height: 1.2;
+    margin-bottom: 6px;
     color: #ffffff;
     font-weight: 700;
 
     @media (max-width: 768px) {
-      font-size: 2rem;
+      font-size: 1.25rem;
+      margin-bottom: 4px;
     }
   }
 
   p {
-    font-size: 1.1rem;
-    line-height: 1.65;
+    font-size: 0.92rem;
+    line-height: 1.45;
     color: #fef3c7;
-    opacity: 0.95;
-    margin-bottom: 28px;
+    opacity: 0.92;
+    margin-bottom: 14px;
     max-width: 820px;
 
     @media (max-width: 768px) {
-      font-size: 0.98rem;
+      font-size: 0.82rem;
+      line-height: 1.35;
+      margin-bottom: 10px;
     }
   }
 }
 
 .export-actions {
   display: flex;
-  gap: 14px;
+  gap: 10px;
   flex-wrap: wrap;
 
   .btn-pdf {
@@ -174,14 +183,22 @@
     color: #ffffff;
     border: none;
     font-weight: 700;
-    padding: 12px 22px;
-    font-size: 0.95rem;
-    box-shadow: 0 4px 14px rgba(185, 28, 28, 0.35);
+    padding: 8px 16px;
+    font-size: 0.86rem;
+    border-radius: var(--radius-md);
+    box-shadow: 0 2px 8px rgba(185, 28, 28, 0.3);
+
+    @media (max-width: 640px) {
+      padding: 7px 12px;
+      font-size: 0.8rem;
+      flex: 1;
+      justify-content: center;
+    }
 
     &:hover {
       background: #991b1b;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(185, 28, 28, 0.45);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(185, 28, 28, 0.4);
     }
   }
 
@@ -190,14 +207,22 @@
     color: #ffffff;
     border: none;
     font-weight: 700;
-    padding: 12px 22px;
-    font-size: 0.95rem;
-    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+    padding: 8px 16px;
+    font-size: 0.86rem;
+    border-radius: var(--radius-md);
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+
+    @media (max-width: 640px) {
+      padding: 7px 12px;
+      font-size: 0.8rem;
+      flex: 1;
+      justify-content: center;
+    }
 
     &:hover {
       background: #0369a1;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.45);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
     }
   }
 }
@@ -206,9 +231,14 @@
    Main Catalog Content
    ========================================================================== */
 .catalog-main {
-  padding-top: 36px;
-  padding-bottom: 70px;
+  padding-top: 20px;
+  padding-bottom: 50px;
   flex: 1;
+
+  @media (max-width: 640px) {
+    padding-top: 14px;
+    padding-bottom: 30px;
+  }
 }
 
 /* ==========================================================================
@@ -541,20 +571,26 @@
 
 .card-img-wrap {
   position: relative;
-  height: 250px;
+  height: 220px;
+  max-height: 220px;
   overflow: hidden;
-  background: var(--bg-subtle);
+  background: #faf7f2;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   @media (max-width: 640px) {
-    height: 220px;
+    height: 180px;
+    max-height: 180px;
   }
 
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    transition: transform 0.45s ease;
+    object-fit: contain;
+    background: #faf7f2;
+    transition: transform 0.35s ease;
   }
 
   .card-no-img-box {
