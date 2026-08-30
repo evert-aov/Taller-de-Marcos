@@ -43,6 +43,7 @@ export class MarcoService {
       dimensiones: createDto.dimensiones.trim(),
       tipoMadera: createDto.tipoMadera.trim(),
       precio: Number(createDto.precio),
+      precioCarton: createDto.precioCarton !== undefined ? Number(createDto.precioCarton) : 0,
       imagenUrl: createDto.imagenUrl || '',
       disponible: createDto.disponible !== undefined ? createDto.disponible : true,
     });
@@ -66,6 +67,7 @@ export class MarcoService {
     if (updateDto.dimensiones !== undefined) updateData.dimensiones = updateDto.dimensiones.trim();
     if (updateDto.tipoMadera !== undefined) updateData.tipoMadera = updateDto.tipoMadera.trim();
     if (updateDto.precio !== undefined) updateData.precio = Number(updateDto.precio);
+    if (updateDto.precioCarton !== undefined) updateData.precioCarton = Number(updateDto.precioCarton);
     if (updateDto.imagenUrl !== undefined) updateData.imagenUrl = updateDto.imagenUrl;
     if (updateDto.disponible !== undefined) updateData.disponible = updateDto.disponible;
 

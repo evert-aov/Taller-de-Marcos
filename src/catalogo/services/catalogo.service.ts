@@ -40,11 +40,12 @@ export class CatalogoService {
       .map(
         (m) => `
       <div class="card ${m.disponible ? '' : 'unavailable'}">
+        <div class="image-wrapper">
           ${
             m.imagenUrl
               ? `<img src="${m.imagenUrl}" alt="${m.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
-                 <div class="placeholder-img" style="display:none;">🖼️ Sin Imagen</div>`
-              : `<div class="placeholder-img">🖼️ Marco Artesanal</div>`
+                 <div class="placeholder-img" style="display:none;">🖼️ Marco de Madera</div>`
+              : `<div class="placeholder-img">🖼️ Marco de Madera</div>`
           }
           <span class="badge ${m.disponible ? 'badge-success' : 'badge-danger'}">
             ${m.disponible ? 'Disponible' : 'Agotado'}
@@ -54,18 +55,24 @@ export class CatalogoService {
           <div class="category-tag">${m.categoria?.nombre || 'General'}</div>
           <h3 class="card-title">${m.nombre}</h3>
           <div class="specs">
-            <p><strong>Tipo de Madera:</strong> <span>${m.tipoMadera}</span></p>
-            <p><strong>Dimensiones:</strong> <span>${m.dimensiones}</span></p>
-          </div>
-          <div class="price-row">
-            <span class="price-label">Precio Base:</span>
-            <span class="price-value">Bs. ${Number(m.precio).toFixed(2)}</span>
+            <div class="spec-row">
+              <span class="spec-label">Madera:</span>
+              <span class="wood-chip">${m.tipoMadera}</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Dimensiones:</span>
+              <span class="spec-val">${m.dimensiones}</span>
+            </div>
           </div>
           ${
             Number(m.precioCarton) > 0
-              ? `<div class="carton-badge">📦 Con soporte de cartón: +Bs. ${Number(m.precioCarton).toFixed(2)} (Total: Bs. ${(Number(m.precio) + Number(m.precioCarton)).toFixed(2)})</div>`
+              ? `<div class="carton-badge">📦 Con fondo de cartón: +Bs. ${Number(m.precioCarton).toFixed(2)}</div>`
               : ''
           }
+          <div class="price-row">
+            <span class="price-currency">Bs.</span>
+            <span class="price-value">${Number(m.precio).toFixed(2)}</span>
+          </div>
         </div>
       </div>
     `,
@@ -98,77 +105,74 @@ export class CatalogoService {
     body {
       background-color: var(--bg);
       color: var(--text);
-      line-height: 1.6;
-      padding: 30px 20px;
+      line-height: 1.5;
+      padding: 24px 16px;
     }
     .container {
-      max-width: 1200px;
+      max-width: 1300px;
       margin: 0 auto;
     }
     header {
       text-align: center;
-      padding: 18px 20px;
+      padding: 16px 20px;
       background: linear-gradient(135deg, #5C2C0B 0%, #8B4513 100%);
       color: #FFF8EE;
       border-radius: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       box-shadow: 0 4px 15px rgba(92, 44, 11, 0.15);
     }
     header h1 {
-      font-size: 1.5rem;
-      margin-bottom: 4px;
+      font-size: 1.4rem;
+      margin-bottom: 3px;
       font-weight: 700;
     }
     header p {
-      font-size: 0.9rem;
-      opacity: 0.9;
-      max-width: 650px;
+      font-size: 0.85rem;
+      opacity: 0.92;
+      max-width: 600px;
       margin: 0 auto;
     }
     .meta-info {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 18px;
-      padding: 10px 18px;
+      margin-bottom: 16px;
+      padding: 8px 16px;
       background: #FFFFFF;
       border-radius: 8px;
       border: 1px solid var(--border);
-      font-size: 0.88rem;
+      font-size: 0.82rem;
       color: var(--muted);
     }
     .grid {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
     }
     .card {
       background: var(--card-bg);
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
       border: 1px solid var(--border);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
       display: flex;
-      flex-direction: row;
-      min-height: 125px;
-      transition: transform 0.15s, box-shadow 0.15s;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
     .card:hover {
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     }
     .image-wrapper {
       position: relative;
-      width: 220px;
-      min-width: 220px;
-      max-width: 220px;
-      height: 130px;
+      width: 100%;
+      height: 190px;
       background: #FAF7F2;
       overflow: hidden;
-      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
     }
     .image-wrapper img {
       width: 100%;
@@ -188,8 +192,8 @@ export class CatalogoService {
     }
     .badge {
       position: absolute;
-      top: 8px;
-      right: 8px;
+      top: 10px;
+      right: 10px;
       padding: 3px 8px;
       border-radius: 12px;
       font-size: 0.7rem;
@@ -206,82 +210,86 @@ export class CatalogoService {
       color: #FFFFFF;
     }
     .card-body {
-      padding: 12px 18px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
       flex-grow: 1;
-      min-width: 0;
     }
     .category-tag {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--accent);
       text-transform: uppercase;
       font-weight: 700;
-      letter-spacing: 0.5px;
-      margin-bottom: 2px;
+      letter-spacing: 0.8px;
+      margin-bottom: 4px;
     }
     .card-title {
       font-size: 1.15rem;
       color: var(--primary-dark);
-      margin-bottom: 6px;
+      margin-bottom: 10px;
       font-weight: 700;
-      line-height: 1.2;
+      line-height: 1.25;
     }
     .specs {
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       color: var(--muted);
-      margin-bottom: 6px;
+      margin-bottom: 12px;
       display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 4px;
+      flex-grow: 1;
     }
-    .specs p {
-      margin-bottom: 0;
+    .spec-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-    .specs strong {
-      color: var(--text);
+    .spec-label {
+      color: var(--muted);
+    }
+    .wood-chip {
+      background: #FAF7F2;
+      color: var(--primary-dark);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      border: 1px solid var(--border);
     }
     .carton-badge {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       color: var(--primary-dark);
       background: #FEF3C7;
-      padding: 3px 8px;
+      padding: 4px 8px;
       border-radius: 4px;
-      margin-bottom: 6px;
-      display: inline-block;
+      margin-bottom: 10px;
+      display: block;
       font-weight: 600;
       border: 1px dashed #D97706;
     }
     .price-row {
       display: flex;
       align-items: baseline;
-      gap: 8px;
+      gap: 4px;
       border-top: 1px solid var(--border);
-      padding-top: 6px;
-      margin-top: 4px;
+      padding-top: 10px;
+      margin-top: auto;
     }
-    .price-label {
-      font-size: 0.82rem;
-      color: var(--muted);
-      font-weight: 500;
+    .price-currency {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--primary);
     }
     .price-value {
-      font-size: 1.25rem;
+      font-size: 1.45rem;
       font-weight: 800;
       color: var(--primary);
     }
     @media (max-width: 600px) {
-      .card {
-        flex-direction: column;
+      .grid {
+        grid-template-columns: 1fr;
       }
       .image-wrapper {
-        width: 100%;
-        min-width: 100%;
-        max-width: 100%;
-        height: 150px;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
+        height: 170px;
       }
     }
     .actions-bar {
