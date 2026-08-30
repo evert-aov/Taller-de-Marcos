@@ -40,8 +40,8 @@ async function bootstrap() {
   );
 
   const port = configService.get<number>('PORT', 3000);
-  await app.listen(port);
-  logger.log(`🚀 Servidor ejecutándose en: http://localhost:${port}`);
-  logger.log(`📚 API endpoints disponibles en: http://localhost:${port}/api`);
+  await app.listen(port, '0.0.0.0');
+  logger.log(`🚀 Servidor ejecutándose en: http://0.0.0.0:${port}`);
+  logger.log(`📚 API endpoints disponibles en: http://0.0.0.0:${port}/api`);
 }
 bootstrap();
