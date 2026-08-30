@@ -466,115 +466,143 @@ export class CatalogoService {
     }
 
     return new Promise((resolve, reject) => {
-      const doc = new PDFDocument({ margin: 40, size: 'A4' });
+      const doc = new PDFDocument({ margin: 35, size: 'A4' });
       const buffers: Buffer[] = [];
 
       doc.on('data', (buffer: Buffer) => buffers.push(buffer));
       doc.on('end', () => resolve(Buffer.concat(buffers)));
       doc.on('error', (err: any) => reject(err));
 
-      // Header
-      doc.rect(0, 0, doc.page.width, 90).fill('#5C2C0B');
-      doc.fillColor('#FAF6F0').fontSize(20).font('Helvetica-Bold')
-        .text('TALLER DE MARCOS DE MADERA', 40, 26, { align: 'center' });
-      doc.fontSize(10).font('Helvetica')
-        .text('Catálogo Oficial de Productos y Marcos Artesanales', 40, 52, { align: 'center' });
+      // Header Banner
+      doc.rect(0, 0, doc.page.width, 85).fill('#5C2C0B');
+      doc.fillColor('#FFF8EE').fontSize(18).font('Helvetica-Bold')
+        .text('🌲 TALLER DE MARCOS DE MADERA', 35, 22, { align: 'center' });
+      doc.fillColor('#D27D2D').fontSize(9).font('Helvetica')
+        .text('Catálogo exclusivo de molduras y marcos finos fabricados a medida en maderas selectas', 35, 48, { align: 'center' });
 
-      // Metadata box
-      const startY = 105;
-      doc.fillColor('#444444').fontSize(9).font('Helvetica-Bold')
-        .text(`Fecha: ${new Date().toLocaleDateString('es-ES')}`, 40, startY);
-      doc.text(`Total de Marcos: ${items.length}`, 400, startY, { align: 'right' });
+      // Metadata Bar
+      const startY = 96;
+      doc.roundedRect(35, startY, 525, 22, 4).fillAndStroke('#FFFFFF', '#E8DFD8');
+      doc.fillColor('#6B5E55').fontSize(8.5).font('Helvetica')
+        .text(`Total de productos: ${items.length} marcos`, 45, startY + 6);
+      doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}`, 320, startY + 6, { width: 230, align: 'right' });
 
-      doc.moveTo(40, startY + 16).lineTo(555, startY + 16).strokeColor('#D27D2D').lineWidth(1.2).stroke();
-
-      let currentY = startY + 26;
+      let currentY = startY + 32;
 
       for (const group of categoryGroups.values()) {
-        // Section Header check (needs at least header + 1 card = 125pt)
-        if (currentY + 125 > doc.page.height - 45) {
+        // Section Header check (needs header + 1 row of cards = 40 + 225 = 265pt)
+        if (currentY + 265 > doc.page.height - 35) {
           doc.addPage();
           currentY = 40;
         }
 
         // Category Section Header Ribbon
-        doc.roundedRect(40, currentY, 515, 22, 4).fill('#8B4513');
-        doc.fillColor('#FFFFFF').fontSize(10).font('Helvetica-Bold')
-          .text(`CATEGORÍA: ${group.categoryName.toUpperCase()}`, 50, currentY + 6);
-        doc.fontSize(8.5).font('Helvetica')
-          .text(`${group.items.length} ${group.items.length === 1 ? 'modelo' : 'modelos'}`, 400, currentY + 7, { align: 'right', width: 145 });
+        doc.roundedRect(35, currentY, 525, 26, 6).fillAndStroke('#FFFFFF', '#E8DFD8');
+        doc.rect(35, currentY, 4, 26).fill('#D27D2D');
+        doc.fillColor('#5C2C0B').fontSize(11).font('Helvetica-Bold')
+          .text(`📁  ${group.categoryName}`, 46, currentY + 7);
 
-        currentY += 28;
+        // Count Badge
+        doc.roundedRect(480, currentY + 5, 70, 16, 8).fillAndStroke('#FAF6F0', '#E8DFD8');
+        doc.fillColor('#8B4513').fontSize(7.5).font('Helvetica-Bold')
+          .text(`${group.items.length} ${group.items.length === 1 ? 'modelo' : 'modelos'}`, 480, currentY + 8.5, { width: 70, align: 'center' });
 
-        for (const { marco, imageBuffer } of group.items) {
-          // Page break check (each card is 90pt)
-          if (currentY + 98 > doc.page.height - 45) {
+        currentY += 34;
+
+        // Process cards in pairs (2 columns per row)
+        for (let i = 0; i < group.items.length; i += 2) {
+          const rowItems = group.items.slice(i, i + 2);
+
+          // Page break check for a row of cards (225pt height)
+          if (currentY + 225 > doc.page.height - 35) {
             doc.addPage();
             currentY = 40;
           }
 
-          // Card container
-          doc.roundedRect(40, currentY, 515, 90, 6)
-            .fillAndStroke('#FFFFFF', '#E8DFD8');
+          rowItems.forEach(({ marco, imageBuffer }, colIndex) => {
+            const cardX = colIndex === 0 ? 35 : 305;
+            const cardW = 255;
+            const cardH = 218;
 
-          // Image thumbnail container
-          const imgBoxX = 48;
-          const imgBoxY = currentY + 8;
-          const imgBoxW = 74;
-          const imgBoxH = 74;
-          doc.roundedRect(imgBoxX, imgBoxY, imgBoxW, imgBoxH, 4).fillAndStroke('#FFFFFF', '#E8DFD8');
+            // Card container
+            doc.roundedRect(cardX, currentY, cardW, cardH, 8)
+              .fillAndStroke('#FFFFFF', '#E8DFD8');
 
-          if (imageBuffer) {
-            try {
-              doc.image(imageBuffer, imgBoxX + 2, imgBoxY + 2, {
-                fit: [imgBoxW - 4, imgBoxH - 4],
-                align: 'center',
-                valign: 'center',
-              });
-            } catch {
-              doc.fillColor('#A89B8C').fontSize(8).font('Helvetica')
-                .text('🖼️ Marco', imgBoxX, imgBoxY + 32, { width: imgBoxW, align: 'center' });
+            // Image container
+            const imgX = cardX + 8;
+            const imgY = currentY + 8;
+            const imgW = cardW - 16;
+            const imgH = 112;
+            doc.roundedRect(imgX, imgY, imgW, imgH, 6).fillAndStroke('#FAF7F2', '#E8DFD8');
+
+            if (imageBuffer) {
+              try {
+                doc.image(imageBuffer, imgX + 4, imgY + 4, {
+                  fit: [imgW - 8, imgH - 8],
+                  align: 'center',
+                  valign: 'center',
+                });
+              } catch {
+                doc.fillColor('#A89B8C').fontSize(8.5).font('Helvetica')
+                  .text('🖼️ Marco de Madera', imgX, imgY + 48, { width: imgW, align: 'center' });
+              }
+            } else {
+              doc.fillColor('#A89B8C').fontSize(8.5).font('Helvetica')
+                .text('🖼️ Marco de Madera', imgX, imgY + 48, { width: imgW, align: 'center' });
             }
-          } else {
-            doc.fillColor('#A89B8C').fontSize(8).font('Helvetica')
-              .text('🖼️ Sin Foto', imgBoxX, imgBoxY + 32, { width: imgBoxW, align: 'center' });
-          }
 
-          // Text & details
-          const textX = 132;
-          doc.fillColor('#5C2C0B').fontSize(12).font('Helvetica-Bold')
-            .text(marco.nombre, textX, currentY + 10, { width: 250, ellipsis: true });
+            // Status Badge top-right of image
+            const badgeW = 58;
+            const badgeH = 13;
+            const badgeX = imgX + imgW - badgeW - 6;
+            const badgeY = imgY + 6;
+            doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 6.5)
+              .fill(marco.disponible ? '#2E7D32' : '#C62828');
+            doc.fillColor('#FFFFFF').fontSize(6.5).font('Helvetica-Bold')
+              .text(marco.disponible ? 'DISPONIBLE' : 'AGOTADO', badgeX, badgeY + 2.5, { width: badgeW, align: 'center' });
 
-          doc.fillColor('#D27D2D').fontSize(8.5).font('Helvetica-Bold')
-            .text(`CATEGORÍA: ${marco.categoria?.nombre?.toUpperCase() || 'GENERAL'}`, textX, currentY + 26);
+            // Category tag
+            doc.fillColor('#D27D2D').fontSize(7.2).font('Helvetica-Bold')
+              .text((marco.categoria?.nombre || 'GENERAL').toUpperCase(), cardX + 12, currentY + 126);
 
-          doc.fillColor('#444444').fontSize(9).font('Helvetica')
-            .text(`• Tipo de Madera: `, textX, currentY + 40, { continued: true })
-            .font('Helvetica-Bold').text(marco.tipoMadera);
+            // Title
+            doc.fillColor('#5C2C0B').fontSize(11).font('Helvetica-Bold')
+              .text(marco.nombre, cardX + 12, currentY + 137, { width: cardW - 24, ellipsis: true });
 
-          doc.font('Helvetica')
-            .text(`• Dimensiones: `, textX, currentY + 54, { continued: true })
-            .font('Helvetica-Bold').text(marco.dimensiones);
+            // Madera row
+            doc.fillColor('#6B5E55').fontSize(8).font('Helvetica')
+              .text('Madera:', cardX + 12, currentY + 153);
+            doc.roundedRect(cardX + cardW - 65, currentY + 150, 53, 14, 3)
+              .fillAndStroke('#FAF7F2', '#E8DFD8');
+            doc.fillColor('#2C221E').fontSize(7.5).font('Helvetica-Bold')
+              .text(marco.tipoMadera, cardX + cardW - 65, currentY + 152.5, { width: 53, align: 'center' });
 
-          if (Number(marco.precioCarton) > 0) {
-            doc.fillColor('#78350F').fontSize(8.5).font('Helvetica-Oblique')
-              .text(`• Con fondo de cartón: +Bs. ${Number(marco.precioCarton).toFixed(2)}`, textX, currentY + 68);
-          }
+            // Dimensiones row
+            doc.fillColor('#6B5E55').fontSize(8).font('Helvetica')
+              .text('Dimensiones:', cardX + 12, currentY + 168);
+            doc.fillColor('#2C221E').fontSize(8).font('Helvetica-Bold')
+              .text(marco.dimensiones, cardX + 100, currentY + 168, { width: cardW - 112, align: 'right' });
 
-          // Price and Availability (Right side)
-          const statusText = marco.disponible ? 'DISPONIBLE' : 'AGOTADO';
-          const statusColor = marco.disponible ? '#2E7D32' : '#C62828';
+            // Carton extra (if configured)
+            if (Number(marco.precioCarton) > 0) {
+              doc.roundedRect(cardX + 12, currentY + 181, cardW - 24, 13, 3).fill('#FEF3C7');
+              doc.fillColor('#78350F').fontSize(7).font('Helvetica-Bold')
+                .text(`📦 Con fondo de cartón: +Bs. ${Number(marco.precioCarton).toFixed(2)}`, cardX + 16, currentY + 183.5);
+            }
 
-          doc.fillColor(statusColor).fontSize(8.5).font('Helvetica-Bold')
-            .text(statusText, 385, currentY + 12, { align: 'right', width: 160 });
+            // Separator line & Price
+            doc.moveTo(cardX + 12, currentY + 196).lineTo(cardX + cardW - 12, currentY + 196)
+              .strokeColor('#E8DFD8').lineWidth(0.8).stroke();
+            doc.fillColor('#8B4513').fontSize(9).font('Helvetica-Bold')
+              .text('Bs.', cardX + 12, currentY + 201);
+            doc.fillColor('#8B4513').fontSize(14).font('Helvetica-Bold')
+              .text(Number(marco.precio).toFixed(2), cardX + 28, currentY + 198);
+          });
 
-          doc.fillColor('#8B4513').fontSize(15).font('Helvetica-Bold')
-            .text(`Bs. ${Number(marco.precio).toFixed(2)}`, 385, currentY + 44, { align: 'right', width: 160 });
-
-          currentY += 96;
+          currentY += 228;
         }
 
-        currentY += 10; // Spacing after category group
+        currentY += 14; // Spacing after category
       }
 
       // Footer
@@ -583,7 +611,7 @@ export class CatalogoService {
         doc.switchToPage(i);
         doc.fontSize(8).fillColor('#888888').text(
           `Página ${i + 1} de ${range.count} - Taller de Marcos de Madera`,
-          40,
+          35,
           doc.page.height - 25,
           { align: 'center' },
         );
