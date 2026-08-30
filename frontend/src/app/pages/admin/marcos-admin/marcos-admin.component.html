@@ -121,8 +121,8 @@
               </td>
               <td>
                 <strong class="price-tag">Bs. {{ marco.precio | number:'1.2-2' }}</strong>
-                @if (marco.precioCarton && marco.precioCarton > 0) {
-                  <div class="carton-subtag">+Bs. {{ marco.precioCarton | number:'1.2-2' }} con cartón</div>
+                @if (marco.precioCarton && (+marco.precioCarton) > 0) {
+                  <div class="carton-subtag">+Bs. {{ (+marco.precioCarton) | number:'1.2-2' }} con cartón</div>
                 }
               </td>
               <td>
