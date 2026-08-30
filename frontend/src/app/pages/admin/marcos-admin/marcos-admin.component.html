@@ -91,11 +91,17 @@
           @for (marco of marcos(); track marco.id) {
             <tr>
               <td class="img-cell">
-                <img
-                  [src]="marco.imagenUrl || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=60'"
-                  [alt]="marco.nombre"
-                  class="thumb-img"
-                />
+                @if (marco.imagenUrl) {
+                  <img
+                    [src]="marco.imagenUrl"
+                    [alt]="marco.nombre"
+                    class="thumb-img"
+                  />
+                } @else {
+                  <div class="thumb-placeholder">
+                    <ng-icon name="heroPhoto" size="20"></ng-icon>
+                  </div>
+                }
               </td>
               <td>
                 <div class="marco-info">

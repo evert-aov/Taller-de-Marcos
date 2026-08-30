@@ -164,11 +164,18 @@
         @for (marco of marcos(); track marco.id) {
           <div class="frame-card" [class.is-unavailable]="!marco.disponible">
             <div class="card-img-wrap" (click)="openDetail(marco)">
-              <img
-                [src]="marco.imagenUrl || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=60'"
-                [alt]="marco.nombre"
-                loading="lazy"
-              />
+              @if (marco.imagenUrl) {
+                <img
+                  [src]="marco.imagenUrl"
+                  [alt]="marco.nombre"
+                  loading="lazy"
+                />
+              } @else {
+                <div class="card-no-img-box">
+                  <ng-icon name="heroPhoto" size="40"></ng-icon>
+                  <span>Marco de Madera</span>
+                </div>
+              }
               <span
                 class="badge card-badge"
                 [ngClass]="marco.disponible ? 'badge-success' : 'badge-danger'"
@@ -250,10 +257,17 @@
         </div>
         <div class="modal-body detail-body">
           <div class="detail-img-col">
-            <img
-              [src]="selectedMarco()!.imagenUrl || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=60'"
-              [alt]="selectedMarco()!.nombre"
-            />
+            @if (selectedMarco()!.imagenUrl) {
+              <img
+                [src]="selectedMarco()!.imagenUrl"
+                [alt]="selectedMarco()!.nombre"
+              />
+            } @else {
+              <div class="detail-no-img-box">
+                <ng-icon name="heroPhoto" size="56"></ng-icon>
+                <span>Marco de Madera Artesanal</span>
+              </div>
+            }
           </div>
           <div class="detail-info-col">
             <span class="badge badge-wood mb-2">

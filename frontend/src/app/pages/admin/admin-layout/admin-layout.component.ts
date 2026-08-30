@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -10,6 +10,8 @@ import {
   heroArrowLeftOnRectangle,
   heroEye,
   heroSparkles,
+  heroBars3,
+  heroXMark,
 } from '@ng-icons/heroicons/outline';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -26,11 +28,23 @@ import { AuthService } from '../../../core/services/auth.service';
       heroArrowLeftOnRectangle,
       heroEye,
       heroSparkles,
+      heroBars3,
+      heroXMark,
     }),
   ],
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.scss',
 })
 export class AdminLayoutComponent {
+  sidebarOpen = signal<boolean>(false);
+
   constructor(public authService: AuthService) {}
+
+  toggleSidebar() {
+    this.sidebarOpen.update((v) => !v);
+  }
+
+  closeSidebar() {
+    this.sidebarOpen.set(false);
+  }
 }

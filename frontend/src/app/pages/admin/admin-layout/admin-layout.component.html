@@ -1,14 +1,24 @@
 <div class="admin-layout">
+  <!-- Mobile Backdrop -->
+  @if (sidebarOpen()) {
+    <div class="sidebar-backdrop" (click)="closeSidebar()"></div>
+  }
+
   <!-- Sidebar -->
-  <aside class="admin-sidebar">
+  <aside class="admin-sidebar" [class.is-open]="sidebarOpen()">
     <div class="sidebar-brand">
-      <div class="brand-icon-box">
-        <ng-icon name="heroPhoto" size="24"></ng-icon>
+      <div class="brand-header-wrap">
+        <div class="brand-icon-box">
+          <ng-icon name="heroPhoto" size="22"></ng-icon>
+        </div>
+        <div>
+          <h2>Taller Marcos</h2>
+          <span class="badge badge-wood">Administración</span>
+        </div>
       </div>
-      <div>
-        <h2>Taller Marcos</h2>
-        <span class="badge badge-wood">Administración</span>
-      </div>
+      <button class="btn-close-sidebar" (click)="closeSidebar()" title="Cerrar menú">
+        <ng-icon name="heroXMark" size="20"></ng-icon>
+      </button>
     </div>
 
     <nav class="sidebar-nav">
@@ -16,6 +26,7 @@
         routerLink="/admin/marcos"
         routerLinkActive="active"
         class="nav-item"
+        (click)="closeSidebar()"
       >
         <ng-icon name="heroPhoto" size="20" class="nav-icon"></ng-icon>
         <span>Gestión de Marcos</span>
@@ -25,6 +36,7 @@
         routerLink="/admin/categorias"
         routerLinkActive="active"
         class="nav-item"
+        (click)="closeSidebar()"
       >
         <ng-icon name="heroFolder" size="20" class="nav-icon"></ng-icon>
         <span>Categorías</span>
@@ -35,6 +47,7 @@
       <a
         routerLink="/"
         class="nav-item nav-public"
+        (click)="closeSidebar()"
       >
         <ng-icon name="heroGlobeAlt" size="20" class="nav-icon"></ng-icon>
         <span>Ver Catálogo Público</span>
@@ -59,13 +72,18 @@
   <!-- Main Content Area -->
   <div class="admin-main">
     <header class="admin-topbar">
-      <div class="topbar-title">
-        <span>Sistema de Gestión de Catálogo</span>
+      <div class="topbar-left">
+        <button class="mobile-hamburger-btn" (click)="toggleSidebar()" title="Abrir menú de navegación">
+          <ng-icon name="heroBars3" size="24"></ng-icon>
+        </button>
+        <div class="topbar-title">
+          <span>Sistema de Gestión de Catálogo</span>
+        </div>
       </div>
       <div class="topbar-actions">
         <a routerLink="/" class="btn btn-secondary btn-sm">
           <ng-icon name="heroEye" size="16"></ng-icon>
-          <span>Vista Pública</span>
+          <span class="btn-text">Vista Pública</span>
         </a>
       </div>
     </header>

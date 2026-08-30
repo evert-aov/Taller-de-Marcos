@@ -266,7 +266,7 @@ export class MarcosAdminComponent implements OnInit, OnDestroy {
       tipoMadera: this.formTipoMadera,
       precio: Number(this.formPrecio),
       precioCarton: Number(this.formPrecioCarton) || 0,
-      imagenUrl: this.formImagenUrl || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=60',
+      imagenUrl: this.formImagenUrl || '',
       disponible: this.formDisponible,
     };
 

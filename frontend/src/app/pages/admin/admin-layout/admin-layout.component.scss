@@ -2,6 +2,22 @@
   display: flex;
   min-height: 100vh;
   background: var(--bg-page);
+  position: relative;
+}
+
+/* Backdrop for Mobile Drawer */
+.sidebar-backdrop {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(43, 17, 3, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 998;
+    animation: fadeIn 0.2s ease-out;
+  }
 }
 
 .admin-sidebar {
@@ -14,31 +30,79 @@
   top: 0;
   height: 100vh;
   flex-shrink: 0;
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (max-width: 768px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    height: 100%;
+    z-index: 999;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    transform: translateX(-100%);
+
+    &.is-open {
+      transform: translateX(0);
+    }
+  }
 }
 
 .sidebar-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
   padding: 20px;
   border-bottom: 1px solid var(--border);
 
-  .brand-icon-box {
-    width: 38px;
-    height: 38px;
-    background: var(--accent-light);
-    color: var(--primary);
-    border-radius: var(--radius-md);
+  .brand-header-wrap {
     display: flex;
     align-items: center;
-    justify-content: center;
-    border: 1px solid #fde68a;
+    gap: 12px;
+
+    .brand-icon-box {
+      width: 38px;
+      height: 38px;
+      background: var(--accent-light);
+      color: var(--primary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #fde68a;
+      flex-shrink: 0;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+      color: var(--primary-dark);
+      margin-bottom: 2px;
+      line-height: 1.1;
+    }
   }
 
-  h2 {
-    font-size: 1.15rem;
-    color: var(--primary-dark);
-    margin-bottom: 2px;
+  .btn-close-sidebar {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+
+    @media (max-width: 768px) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &:hover {
+      background: var(--bg-subtle);
+      color: var(--primary);
+    }
   }
 }
 
@@ -48,6 +112,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  overflow-y: auto;
 
   .nav-item {
     display: flex;
@@ -94,12 +159,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
 
   .user-info {
     display: flex;
     align-items: center;
     gap: 8px;
     overflow: hidden;
+    flex: 1;
 
     .user-avatar-icon {
       color: var(--primary);
@@ -136,6 +203,7 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    flex-shrink: 0;
   }
 }
 
@@ -144,6 +212,7 @@
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
+  min-width: 0;
 }
 
 .admin-topbar {
@@ -154,15 +223,69 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 28px;
+  gap: 16px;
 
-  .topbar-title {
-    font-weight: 600;
-    color: var(--text-muted);
-    font-size: 0.9rem;
+  @media (max-width: 768px) {
+    padding: 0 16px;
+    height: 58px;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .mobile-hamburger-btn {
+      display: none;
+      background: #faf7f2;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--primary-dark);
+      padding: 8px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+
+      @media (max-width: 768px) {
+        display: inline-flex;
+      }
+
+      &:hover {
+        background: var(--accent-light);
+        border-color: var(--accent);
+      }
+    }
+
+    .topbar-title {
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+
+      @media (max-width: 480px) {
+        font-size: 0.82rem;
+      }
+    }
+  }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .btn-text {
+      @media (max-width: 480px) {
+        display: none;
+      }
+    }
   }
 }
 
 .admin-content {
   flex: 1;
   padding: 28px;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
 }

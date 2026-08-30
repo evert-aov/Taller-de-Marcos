@@ -40,11 +40,11 @@ export class CatalogoService {
       .map(
         (m) => `
       <div class="card ${m.disponible ? '' : 'unavailable'}">
-        <div class="image-wrapper">
           ${
             m.imagenUrl
-              ? `<img src="${m.imagenUrl}" alt="${m.nombre}" onerror="this.src='https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=500&auto=format&fit=crop&q=60'"/>`
-              : `<div class="placeholder-img">🖼️ Marco de Madera</div>`
+              ? `<img src="${m.imagenUrl}" alt="${m.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                 <div class="placeholder-img" style="display:none;">🖼️ Sin Imagen</div>`
+              : `<div class="placeholder-img">🖼️ Marco Artesanal</div>`
           }
           <span class="badge ${m.disponible ? 'badge-success' : 'badge-danger'}">
             ${m.disponible ? 'Disponible' : 'Agotado'}
