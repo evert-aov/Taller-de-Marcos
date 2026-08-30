@@ -236,16 +236,36 @@
 
             <div class="form-row">
               <div class="form-group">
-                <label for="dimensiones">Dimensiones *</label>
-                <input
-                  type="text"
-                  id="dimensiones"
-                  name="dimensiones"
-                  class="form-control"
-                  [(ngModel)]="formDimensiones"
-                  placeholder="Ej. 30x40 cm, 50x70 cm, A3"
-                  required
-                />
+                <label>Medidas del Marco (cm) *</label>
+                <div class="dimensions-inputs-group">
+                  <div class="dim-field">
+                    <span class="dim-sub-label">Ancho (cm)</span>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="1"
+                      name="ancho"
+                      class="form-control"
+                      [(ngModel)]="formAncho"
+                      placeholder="30"
+                      required
+                    />
+                  </div>
+                  <span class="dim-separator">×</span>
+                  <div class="dim-field">
+                    <span class="dim-sub-label">Alto (cm)</span>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="1"
+                      name="alto"
+                      class="form-control"
+                      [(ngModel)]="formAlto"
+                      placeholder="40"
+                      required
+                    />
+                  </div>
+                </div>
               </div>
 
               <div class="form-group">

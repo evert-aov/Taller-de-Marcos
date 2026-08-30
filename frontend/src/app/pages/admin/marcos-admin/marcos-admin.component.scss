@@ -239,6 +239,31 @@
   }
 }
 
+.dimensions-inputs-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .dim-field {
+    flex: 1;
+
+    .dim-sub-label {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+      display: block;
+      font-weight: 600;
+    }
+  }
+
+  .dim-separator {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-top: 16px;
+  }
+}
+
 .image-upload-box {
   background: var(--bg-subtle);
   border: 1px dashed var(--border);

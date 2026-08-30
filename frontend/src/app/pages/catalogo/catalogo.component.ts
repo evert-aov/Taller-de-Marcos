@@ -98,17 +98,15 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     const cat = marco.categoria || this.categorias().find((c) => c.id === marco.categoriaId);
     if (!cat) return false;
     return (
-      cat.slug.toLowerCase().includes('vacio') ||
-      cat.nombre.toLowerCase().includes('vacio') ||
-      cat.nombre.toLowerCase().includes('vacío')
+      cat.slug?.toLowerCase().includes('vacio') ||
+      cat.nombre?.toLowerCase().includes('vacio') ||
+      cat.nombre?.toLowerCase().includes('vacío')
     );
   }
 
   hasCartonOption(marco: Marco): boolean {
-    return (
-      (marco.precioCarton !== undefined && Number(marco.precioCarton) > 0) ||
-      this.isVacioCategory(marco)
-    );
+    const price = Number(marco.precioCarton);
+    return !isNaN(price) && price > 0;
   }
 
   isCartonSelected(marcoId: string): boolean {
@@ -123,10 +121,8 @@ export class CatalogoComponent implements OnInit, OnDestroy {
   }
 
   getCartonPrice(marco: Marco): number {
-    if (marco.precioCarton !== undefined && Number(marco.precioCarton) > 0) {
-      return Number(marco.precioCarton);
-    }
-    return 5;
+    const price = Number(marco.precioCarton);
+    return !isNaN(price) && price > 0 ? price : 0;
   }
 
   calculatePrice(marco: Marco): number {

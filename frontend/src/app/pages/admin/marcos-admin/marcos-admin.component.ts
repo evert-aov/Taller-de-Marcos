@@ -66,10 +66,11 @@ export class MarcosAdminComponent implements OnInit, OnDestroy {
   // Form Model
   formNombre = '';
   formCategoriaId = '';
-  formDimensiones = '';
-  formTipoMadera = '';
+  formAncho: number | null = 30;
+  formAlto: number | null = 40;
+  formTipoMadera = 'Pino';
   formPrecio = 0;
-  formPrecioCarton = 5;
+  formPrecioCarton = 0;
   formImagenUrl = '';
   formDisponible = true;
 
@@ -112,6 +113,23 @@ export class MarcosAdminComponent implements OnInit, OnDestroy {
       cat.nombre.toLowerCase().includes('vacio') ||
       cat.nombre.toLowerCase().includes('vacío')
     );
+  }
+
+  private parseDimensions(dimStr: string) {
+    if (!dimStr) {
+      this.formAncho = 30;
+      this.formAlto = 40;
+      return;
+    }
+    const matches = dimStr.match(/(\d+(?:\.\d+)?)\s*[xX*×]\s*(\d+(?:\.\d+)?)/);
+    if (matches) {
+      this.formAncho = parseFloat(matches[1]);
+      this.formAlto = parseFloat(matches[2]);
+    } else {
+      const single = dimStr.match(/(\d+(?:\.\d+)?)/);
+      this.formAncho = single ? parseFloat(single[1]) : 30;
+      this.formAlto = 40;
+    }
   }
 
   loadCategorias() {
@@ -164,10 +182,11 @@ export class MarcosAdminComponent implements OnInit, OnDestroy {
     this.currentId = null;
     this.formNombre = '';
     this.formCategoriaId = this.categorias().length > 0 ? this.categorias()[0].id : '';
-    this.formDimensiones = '30x40 cm';
-    this.formTipoMadera = 'Roble';
+    this.formAncho = 30;
+    this.formAlto = 40;
+    this.formTipoMadera = 'Pino';
     this.formPrecio = 45;
-    this.formPrecioCarton = 5;
+    this.formPrecioCarton = 0;
     this.formImagenUrl = '';
     this.formDisponible = true;
     this.imagePreview.set('');
@@ -180,8 +199,8 @@ export class MarcosAdminComponent implements OnInit, OnDestroy {
     this.currentId = marco.id;
     this.formNombre = marco.nombre;
     this.formCategoriaId = marco.categoriaId;
-    this.formDimensiones = marco.dimensiones;
-    this.formTipoMadera = marco.tipoMadera;
+    this.parseDimensions(marco.dimensiones);
+    this.formTipoMadera = marco.tipoMadera || 'Pino';
     this.formPrecio = Number(marco.precio);
     this.formPrecioCarton =
       marco.precioCarton !== undefined && marco.precioCarton !== null
@@ -243,8 +262,8 @@ export class MarcosAdminComponent implements OnInit, OnDestroy {
       this.errorMessage.set('Debe seleccionar una categoría');
       return;
     }
-    if (!this.formDimensiones.trim()) {
-      this.errorMessage.set('Las dimensiones son obligatorias');
+    if (!this.formAncho || this.formAncho <= 0 || !this.formAlto || this.formAlto <= 0) {
+      this.errorMessage.set('Debe ingresar un ancho y alto válidos en cm');
       return;
     }
     if (!this.formTipoMadera.trim()) {
@@ -259,10 +278,12 @@ export class MarcosAdminComponent implements OnInit, OnDestroy {
     this.saving.set(true);
     this.errorMessage.set('');
 
+    const formattedDimensiones = `${this.formAncho}x${this.formAlto} cm`;
+
     const payload = {
       nombre: this.formNombre,
       categoriaId: this.formCategoriaId,
-      dimensiones: this.formDimensiones,
+      dimensiones: formattedDimensiones,
       tipoMadera: this.formTipoMadera,
       precio: Number(this.formPrecio),
       precioCarton: Number(this.formPrecioCarton) || 0,
