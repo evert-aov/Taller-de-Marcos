@@ -29,8 +29,8 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './login.component.scss',
 })
 export class LoginComponent {
-  email = 'admin@taller.com';
-  password = 'admin123';
+  email = '';
+  password = '';
   loading = signal<boolean>(false);
   errorMessage = signal<string>('');
 
@@ -38,12 +38,6 @@ export class LoginComponent {
     private authService: AuthService,
     private router: Router,
   ) {}
-
-  fillDemo() {
-    this.email = 'admin@taller.com';
-    this.password = 'admin123';
-    this.errorMessage.set('');
-  }
 
   onSubmit() {
     if (!this.email || !this.password) {

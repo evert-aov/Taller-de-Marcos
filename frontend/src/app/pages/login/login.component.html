@@ -24,7 +24,7 @@
           name="email"
           class="form-control"
           [(ngModel)]="email"
-          placeholder="admin@taller.com"
+          placeholder="admin@empresa.com"
           required
         />
       </div>
@@ -40,16 +40,6 @@
           placeholder="••••••••"
           required
         />
-      </div>
-
-      <div class="demo-box">
-        <div class="demo-info">
-          <strong>Credenciales por defecto:</strong>
-          <code>admin@taller.com</code> / <code>admin123</code>
-        </div>
-        <button type="button" class="btn btn-secondary btn-sm" (click)="fillDemo()">
-          Autocompletar
-        </button>
       </div>
 
       <button type="submit" class="btn btn-primary btn-block" [disabled]="loading()">
