@@ -466,7 +466,7 @@ export class CatalogoService {
     }
 
     return new Promise((resolve, reject) => {
-      const doc = new PDFDocument({ margin: 35, size: 'A4' });
+      const doc = new PDFDocument({ margin: 30, size: 'A4', layout: 'landscape', bufferPages: true });
       const buffers: Buffer[] = [];
 
       doc.on('data', (buffer: Buffer) => buffers.push(buffer));
@@ -474,146 +474,148 @@ export class CatalogoService {
       doc.on('error', (err: any) => reject(err));
 
       // Header Banner
-      doc.rect(0, 0, doc.page.width, 85).fill('#5C2C0B');
-      doc.fillColor('#FFF8EE').fontSize(18).font('Helvetica-Bold')
-        .text('🌲 TALLER DE MARCOS DE MADERA', 35, 22, { align: 'center' });
-      doc.fillColor('#D27D2D').fontSize(9).font('Helvetica')
-        .text('Catálogo exclusivo de molduras y marcos finos fabricados a medida en maderas selectas', 35, 48, { align: 'center' });
+      doc.rect(0, 0, doc.page.width, 68).fill('#5C2C0B');
+      doc.fillColor('#FFF8EE').fontSize(17).font('Helvetica-Bold')
+        .text('TALLER DE MARCOS DE MADERA', 30, 16, { align: 'center' });
+      doc.fillColor('#D27D2D').fontSize(8.5).font('Helvetica')
+        .text('Catálogo exclusivo de molduras y marcos finos fabricados a medida en maderas selectas', 30, 40, { align: 'center' });
 
       // Metadata Bar
-      const startY = 96;
-      doc.roundedRect(35, startY, 525, 22, 4).fillAndStroke('#FFFFFF', '#E8DFD8');
-      doc.fillColor('#6B5E55').fontSize(8.5).font('Helvetica')
-        .text(`Total de productos: ${items.length} marcos`, 45, startY + 6);
-      doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}`, 320, startY + 6, { width: 230, align: 'right' });
+      const startY = 76;
+      doc.roundedRect(30, startY, doc.page.width - 60, 20, 4).fillAndStroke('#FFFFFF', '#E8DFD8');
+      doc.fillColor('#6B5E55').fontSize(8).font('Helvetica')
+        .text(`Total de productos: ${items.length} marcos disponibles`, 42, startY + 5.5);
+      doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}`, 540, startY + 5.5, { width: 260, align: 'right' });
 
-      let currentY = startY + 32;
+      let currentY = startY + 28;
 
       for (const group of categoryGroups.values()) {
-        // Section Header check (needs header + 1 row of cards = 40 + 225 = 265pt)
-        if (currentY + 265 > doc.page.height - 35) {
+        // Section Header check (needs header + 1 row of cards = 30 + 205 = 235pt)
+        if (currentY + 235 > doc.page.height - 30) {
           doc.addPage();
-          currentY = 40;
+          currentY = 30;
         }
 
-        // Category Section Header Ribbon
-        doc.roundedRect(35, currentY, 525, 26, 6).fillAndStroke('#FFFFFF', '#E8DFD8');
-        doc.rect(35, currentY, 4, 26).fill('#D27D2D');
-        doc.fillColor('#5C2C0B').fontSize(11).font('Helvetica-Bold')
-          .text(`📁  ${group.categoryName}`, 46, currentY + 7);
+        // Category Section Header Ribbon (Landscape width)
+        const ribbonW = doc.page.width - 60;
+        doc.roundedRect(30, currentY, ribbonW, 24, 5).fillAndStroke('#FFFFFF', '#E8DFD8');
+        doc.rect(30, currentY, 4, 24).fill('#D27D2D');
+        doc.fillColor('#5C2C0B').fontSize(10.5).font('Helvetica-Bold')
+          .text(group.categoryName.toUpperCase(), 44, currentY + 6.5);
 
         // Count Badge
-        doc.roundedRect(480, currentY + 5, 70, 16, 8).fillAndStroke('#FAF6F0', '#E8DFD8');
+        doc.roundedRect(30 + ribbonW - 75, currentY + 4, 68, 16, 8).fillAndStroke('#FAF6F0', '#E8DFD8');
         doc.fillColor('#8B4513').fontSize(7.5).font('Helvetica-Bold')
-          .text(`${group.items.length} ${group.items.length === 1 ? 'modelo' : 'modelos'}`, 480, currentY + 8.5, { width: 70, align: 'center' });
+          .text(`${group.items.length} ${group.items.length === 1 ? 'modelo' : 'modelos'}`, 30 + ribbonW - 75, currentY + 7.5, { width: 68, align: 'center' });
 
-        currentY += 34;
+        currentY += 30;
 
-        // Process cards in pairs (2 columns per row)
-        for (let i = 0; i < group.items.length; i += 2) {
-          const rowItems = group.items.slice(i, i + 2);
+        // Process cards in groups of 3 (3 columns per row in Landscape)
+        for (let i = 0; i < group.items.length; i += 3) {
+          const rowItems = group.items.slice(i, i + 3);
 
-          // Page break check for a row of cards (225pt height)
-          if (currentY + 225 > doc.page.height - 35) {
+          // Page break check for a row of cards (205pt height)
+          if (currentY + 205 > doc.page.height - 30) {
             doc.addPage();
-            currentY = 40;
+            currentY = 30;
           }
 
           rowItems.forEach(({ marco, imageBuffer }, colIndex) => {
-            const cardX = colIndex === 0 ? 35 : 305;
-            const cardW = 255;
-            const cardH = 218;
+            const cardW = 248;
+            const cardH = 200;
+            const gap = 18.5;
+            const cardX = 30 + colIndex * (cardW + gap);
 
             // Card container
-            doc.roundedRect(cardX, currentY, cardW, cardH, 8)
+            doc.roundedRect(cardX, currentY, cardW, cardH, 7)
               .fillAndStroke('#FFFFFF', '#E8DFD8');
 
             // Image container
-            const imgX = cardX + 8;
-            const imgY = currentY + 8;
-            const imgW = cardW - 16;
-            const imgH = 112;
-            doc.roundedRect(imgX, imgY, imgW, imgH, 6).fillAndStroke('#FAF7F2', '#E8DFD8');
+            const imgX = cardX + 7;
+            const imgY = currentY + 7;
+            const imgW = cardW - 14;
+            const imgH = 102;
+            doc.roundedRect(imgX, imgY, imgW, imgH, 5).fillAndStroke('#FAF7F2', '#E8DFD8');
 
             if (imageBuffer) {
               try {
-                doc.image(imageBuffer, imgX + 4, imgY + 4, {
-                  fit: [imgW - 8, imgH - 8],
+                doc.image(imageBuffer, imgX + 3, imgY + 3, {
+                  fit: [imgW - 6, imgH - 6],
                   align: 'center',
                   valign: 'center',
                 });
               } catch {
                 doc.fillColor('#A89B8C').fontSize(8.5).font('Helvetica')
-                  .text('🖼️ Marco de Madera', imgX, imgY + 48, { width: imgW, align: 'center' });
+                  .text('Marco de Madera', imgX, imgY + 44, { width: imgW, align: 'center' });
               }
             } else {
               doc.fillColor('#A89B8C').fontSize(8.5).font('Helvetica')
-                .text('🖼️ Marco de Madera', imgX, imgY + 48, { width: imgW, align: 'center' });
+                .text('Marco de Madera', imgX, imgY + 44, { width: imgW, align: 'center' });
             }
 
             // Status Badge top-right of image
-            const badgeW = 58;
-            const badgeH = 13;
-            const badgeX = imgX + imgW - badgeW - 6;
-            const badgeY = imgY + 6;
-            doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 6.5)
+            const badgeW = 56;
+            const badgeH = 12;
+            const badgeX = imgX + imgW - badgeW - 5;
+            const badgeY = imgY + 5;
+            doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 6)
               .fill(marco.disponible ? '#2E7D32' : '#C62828');
-            doc.fillColor('#FFFFFF').fontSize(6.5).font('Helvetica-Bold')
+            doc.fillColor('#FFFFFF').fontSize(6).font('Helvetica-Bold')
               .text(marco.disponible ? 'DISPONIBLE' : 'AGOTADO', badgeX, badgeY + 2.5, { width: badgeW, align: 'center' });
 
             // Category tag
-            doc.fillColor('#D27D2D').fontSize(7.2).font('Helvetica-Bold')
-              .text((marco.categoria?.nombre || 'GENERAL').toUpperCase(), cardX + 12, currentY + 126);
+            doc.fillColor('#D27D2D').fontSize(6.8).font('Helvetica-Bold')
+              .text((marco.categoria?.nombre || 'GENERAL').toUpperCase(), cardX + 10, currentY + 114);
 
             // Title
-            doc.fillColor('#5C2C0B').fontSize(11).font('Helvetica-Bold')
-              .text(marco.nombre, cardX + 12, currentY + 137, { width: cardW - 24, ellipsis: true });
+            doc.fillColor('#5C2C0B').fontSize(10).font('Helvetica-Bold')
+              .text(marco.nombre, cardX + 10, currentY + 124, { width: cardW - 20, ellipsis: true });
 
             // Madera row
-            doc.fillColor('#6B5E55').fontSize(8).font('Helvetica')
-              .text('Madera:', cardX + 12, currentY + 153);
-            doc.roundedRect(cardX + cardW - 65, currentY + 150, 53, 14, 3)
+            doc.fillColor('#6B5E55').fontSize(7.5).font('Helvetica')
+              .text('Madera:', cardX + 10, currentY + 139);
+            doc.roundedRect(cardX + cardW - 58, currentY + 136, 48, 13, 3)
               .fillAndStroke('#FAF7F2', '#E8DFD8');
-            doc.fillColor('#2C221E').fontSize(7.5).font('Helvetica-Bold')
-              .text(marco.tipoMadera, cardX + cardW - 65, currentY + 152.5, { width: 53, align: 'center' });
+            doc.fillColor('#2C221E').fontSize(7).font('Helvetica-Bold')
+              .text(marco.tipoMadera, cardX + cardW - 58, currentY + 138, { width: 48, align: 'center' });
 
             // Dimensiones row
-            doc.fillColor('#6B5E55').fontSize(8).font('Helvetica')
-              .text('Dimensiones:', cardX + 12, currentY + 168);
-            doc.fillColor('#2C221E').fontSize(8).font('Helvetica-Bold')
-              .text(marco.dimensiones, cardX + 100, currentY + 168, { width: cardW - 112, align: 'right' });
+            doc.fillColor('#6B5E55').fontSize(7.5).font('Helvetica')
+              .text('Dimensiones:', cardX + 10, currentY + 153);
+            doc.fillColor('#2C221E').fontSize(7.5).font('Helvetica-Bold')
+              .text(marco.dimensiones, cardX + 80, currentY + 153, { width: cardW - 90, align: 'right' });
 
             // Carton extra (if configured)
             if (Number(marco.precioCarton) > 0) {
-              doc.roundedRect(cardX + 12, currentY + 181, cardW - 24, 13, 3).fill('#FEF3C7');
-              doc.fillColor('#78350F').fontSize(7).font('Helvetica-Bold')
-                .text(`📦 Con fondo de cartón: +Bs. ${Number(marco.precioCarton).toFixed(2)}`, cardX + 16, currentY + 183.5);
+              doc.roundedRect(cardX + 10, currentY + 166, cardW - 20, 12, 3).fill('#FEF3C7');
+              doc.fillColor('#78350F').fontSize(6.5).font('Helvetica-Bold')
+                .text(`Con fondo de cartón: +Bs. ${Number(marco.precioCarton).toFixed(2)}`, cardX + 13, currentY + 168);
             }
 
             // Separator line & Price
-            doc.moveTo(cardX + 12, currentY + 196).lineTo(cardX + cardW - 12, currentY + 196)
+            doc.moveTo(cardX + 10, currentY + 180).lineTo(cardX + cardW - 10, currentY + 180)
               .strokeColor('#E8DFD8').lineWidth(0.8).stroke();
-            doc.fillColor('#8B4513').fontSize(9).font('Helvetica-Bold')
-              .text('Bs.', cardX + 12, currentY + 201);
-            doc.fillColor('#8B4513').fontSize(14).font('Helvetica-Bold')
-              .text(Number(marco.precio).toFixed(2), cardX + 28, currentY + 198);
+            doc.fillColor('#8B4513').fontSize(8.5).font('Helvetica-Bold')
+              .text('Bs.', cardX + 10, currentY + 185);
+            doc.fillColor('#8B4513').fontSize(13).font('Helvetica-Bold')
+              .text(Number(marco.precio).toFixed(2), cardX + 26, currentY + 183);
           });
 
-          currentY += 228;
+          currentY += 208;
         }
 
-        currentY += 14; // Spacing after category
+        currentY += 12; // Spacing after category
       }
 
-      // Footer
+      // Footer numbering across all pages
       const range = doc.bufferedPageRange();
       for (let i = range.start; i < range.start + range.count; i++) {
         doc.switchToPage(i);
-        doc.fontSize(8).fillColor('#888888').text(
+        doc.fontSize(7.5).fillColor('#888888').text(
           `Página ${i + 1} de ${range.count} - Taller de Marcos de Madera`,
-          35,
-          doc.page.height - 25,
-          { align: 'center' },
+          30,
+          doc.page.height - 20,
+          { align: 'center', width: doc.page.width - 60 },
         );
       }
 
