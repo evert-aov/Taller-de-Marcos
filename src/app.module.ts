@@ -42,17 +42,23 @@ if (existsSync(frontendDistPath)) {
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST', 'localhost'),
-        port: parseInt(configService.get<string>('DB_PORT', '5432'), 10),
-        username: configService.get<string>('DB_USER', 'evert'),
-        password: configService.get<string>('DB_PASS', 'nakroth'),
-        database: configService.get<string>('DB_NAME', 'taller_1'),
-        entities: [Usuario, Categoria, Marco],
-        synchronize: configService.get<string>('DB_SYNCHRONIZE', 'true') === 'true',
-        logging: configService.get<string>('DB_LOGGING', 'false') === 'true',
-      }),
+      useFactory: (configService: ConfigService) => {
+        const isProduction = configService.get<string>('NODE_ENV') === 'production';
+        const useSsl = configService.get<string>('DB_SSL') === 'true' || isProduction;
+        const host = configService.get<string>('DB_HOST', 'localhost');
+        return {
+          type: 'postgres',
+          host,
+          port: parseInt(configService.get<string>('DB_PORT', '5432'), 10),
+          username: configService.get<string>('DB_USER', 'evert'),
+          password: configService.get<string>('DB_PASS', 'nakroth'),
+          database: configService.get<string>('DB_NAME', 'taller_1'),
+          entities: [Usuario, Categoria, Marco],
+          synchronize: configService.get<string>('DB_SYNCHRONIZE', 'true') === 'true',
+          logging: configService.get<string>('DB_LOGGING', 'false') === 'true',
+          ssl: useSsl && host !== 'localhost' ? { rejectUnauthorized: false } : false,
+        };
+      },
     }),
     ...staticModules,
     UsuariosModule,
