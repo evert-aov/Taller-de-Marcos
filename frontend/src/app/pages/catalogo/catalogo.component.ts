@@ -1,24 +1,24 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   heroPhoto,
-  heroFolder,
+  heroAdjustmentsHorizontal,
+  heroMagnifyingGlass,
+  heroFunnel,
+  heroCheck,
+  heroXMark,
+  heroEye,
   heroArrowDownTray,
   heroGlobeAlt,
-  heroMagnifyingGlass,
-  heroArrowPath,
   heroLockClosed,
-  heroEye,
-  heroXMark,
-  heroCheck,
-  heroSparkles,
-  heroAdjustmentsHorizontal,
-  heroCube,
   heroArrowLeftOnRectangle,
+  heroSparkles,
   heroSquares2x2,
+  heroArrowPath,
+  heroFolder,
 } from '@ng-icons/heroicons/outline';
 import { CatalogoService } from '../../core/services/catalogo.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -31,20 +31,20 @@ import { Marco, Categoria, FilterMarco } from '../../core/models';
   viewProviders: [
     provideIcons({
       heroPhoto,
-      heroFolder,
+      heroAdjustmentsHorizontal,
+      heroMagnifyingGlass,
+      heroFunnel,
+      heroCheck,
+      heroXMark,
+      heroEye,
       heroArrowDownTray,
       heroGlobeAlt,
-      heroMagnifyingGlass,
-      heroArrowPath,
       heroLockClosed,
-      heroEye,
-      heroXMark,
-      heroCheck,
-      heroSparkles,
-      heroAdjustmentsHorizontal,
-      heroCube,
       heroArrowLeftOnRectangle,
+      heroSparkles,
       heroSquares2x2,
+      heroArrowPath,
+      heroFolder,
     }),
   ],
   templateUrl: './catalogo.component.html',
@@ -55,6 +55,25 @@ export class CatalogoComponent implements OnInit, OnDestroy {
   categorias = signal<Categoria[]>([]);
   woodTypes = signal<string[]>([]);
   loading = signal<boolean>(true);
+
+  // Grouped marcos by category computed
+  marcosByCategory = computed(() => {
+    const list = this.marcos();
+    const groups: { categoryName: string; categoryDescription?: string; marcos: Marco[] }[] = [];
+    const map = new Map<string, { categoryName: string; categoryDescription?: string; marcos: Marco[] }>();
+
+    for (const marco of list) {
+      const catName = marco.categoria?.nombre || 'Colección General';
+      const catDesc = marco.categoria?.descripcion;
+      if (!map.has(catName)) {
+        const group = { categoryName: catName, categoryDescription: catDesc, marcos: [] };
+        map.set(catName, group);
+        groups.push(group);
+      }
+      map.get(catName)!.marcos.push(marco);
+    }
+    return groups;
+  });
 
   // Filters
   searchTerm = '';

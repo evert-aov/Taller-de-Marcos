@@ -38,45 +38,75 @@ export class CatalogoService {
       minute: '2-digit',
     });
 
-    const itemsHtml = marcos
+    // Group marcos by category
+    const categoryMap = new Map<string, { name: string; description?: string; marcos: Marco[] }>();
+
+    for (const m of marcos) {
+      const catName = m.categoria?.nombre || 'Colección General';
+      const catDesc = m.categoria?.descripcion || '';
+      if (!categoryMap.has(catName)) {
+        categoryMap.set(catName, { name: catName, description: catDesc, marcos: [] });
+      }
+      categoryMap.get(catName)!.marcos.push(m);
+    }
+
+    const sectionsHtml = Array.from(categoryMap.values())
       .map(
-        (m) => `
-      <div class="card ${m.disponible ? '' : 'unavailable'}">
-        <div class="image-wrapper">
-          ${
-            m.imagenUrl
-              ? `<img src="${m.imagenUrl}" alt="${m.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
-                 <div class="placeholder-img" style="display:none;">🖼️ Marco de Madera</div>`
-              : `<div class="placeholder-img">🖼️ Marco de Madera</div>`
-          }
-          <span class="badge ${m.disponible ? 'badge-success' : 'badge-danger'}">
-            ${m.disponible ? 'Disponible' : 'Agotado'}
-          </span>
-        </div>
-        <div class="card-body">
-          <div class="category-tag">${m.categoria?.nombre || 'General'}</div>
-          <h3 class="card-title">${m.nombre}</h3>
-          <div class="specs">
-            <div class="spec-row">
-              <span class="spec-label">Madera:</span>
-              <span class="wood-chip">${m.tipoMadera}</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">Dimensiones:</span>
-              <span class="spec-val">${m.dimensiones}</span>
-            </div>
+        (group) => `
+      <section class="category-section">
+        <div class="category-section-header">
+          <div class="cat-title-wrap">
+            <span class="cat-icon">📁</span>
+            <h2>${group.name}</h2>
           </div>
-          ${
-            Number(m.precioCarton) > 0
-              ? `<div class="carton-badge">📦 Con fondo de cartón: +Bs. ${Number(m.precioCarton).toFixed(2)}</div>`
-              : ''
-          }
-          <div class="price-row">
-            <span class="price-currency">Bs.</span>
-            <span class="price-value">${Number(m.precio).toFixed(2)}</span>
-          </div>
+          <span class="cat-badge">${group.marcos.length} ${group.marcos.length === 1 ? 'modelo' : 'modelos'}</span>
         </div>
-      </div>
+        ${group.description ? `<p class="category-section-desc">${group.description}</p>` : ''}
+        <div class="grid">
+          ${group.marcos
+            .map(
+              (m) => `
+            <div class="card ${m.disponible ? '' : 'unavailable'}">
+              <div class="image-wrapper">
+                ${
+                  m.imagenUrl
+                    ? `<img src="${m.imagenUrl}" alt="${m.nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                       <div class="placeholder-img" style="display:none;">🖼️ Marco de Madera</div>`
+                    : `<div class="placeholder-img">🖼️ Marco de Madera</div>`
+                }
+                <span class="badge ${m.disponible ? 'badge-success' : 'badge-danger'}">
+                  ${m.disponible ? 'Disponible' : 'Agotado'}
+                </span>
+              </div>
+              <div class="card-body">
+                <div class="category-tag">${m.categoria?.nombre || 'General'}</div>
+                <h3 class="card-title">${m.nombre}</h3>
+                <div class="specs">
+                  <div class="spec-row">
+                    <span class="spec-label">Madera:</span>
+                    <span class="wood-chip">${m.tipoMadera}</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-label">Dimensiones:</span>
+                    <span class="spec-val">${m.dimensiones}</span>
+                  </div>
+                </div>
+                ${
+                  Number(m.precioCarton) > 0
+                    ? `<div class="carton-badge">📦 Con fondo de cartón: +Bs. ${Number(m.precioCarton).toFixed(2)}</div>`
+                    : ''
+                }
+                <div class="price-row">
+                  <span class="price-currency">Bs.</span>
+                  <span class="price-value">${Number(m.precio).toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          `,
+            )
+            .join('')}
+        </div>
+      </section>
     `,
       )
       .join('');
@@ -138,13 +168,51 @@ export class CatalogoService {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 22px;
       padding: 8px 16px;
       background: #FFFFFF;
       border-radius: 8px;
       border: 1px solid var(--border);
       font-size: 0.82rem;
       color: var(--muted);
+    }
+    .category-section {
+      margin-bottom: 36px;
+    }
+    .category-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: #FFFFFF;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      margin-bottom: 14px;
+    }
+    .cat-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cat-title-wrap h2 {
+      font-size: 1.15rem;
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+    .cat-badge {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--bg);
+      padding: 3px 8px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .category-section-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: -6px 0 14px 4px;
     }
     .grid {
       display: grid;
@@ -341,9 +409,7 @@ export class CatalogoService {
       <div><strong>Fecha de emisión:</strong> ${generationDate}</div>
     </div>
 
-    <div class="grid">
-      ${itemsHtml}
-    </div>
+    ${sectionsHtml}
 
     <footer>
       <p>© ${new Date().getFullYear()} Taller de Marcos de Madera. Todos los derechos reservados.</p>
@@ -387,6 +453,17 @@ export class CatalogoService {
       })),
     );
 
+    // Group items by category
+    const categoryGroups = new Map<string, { categoryName: string; items: { marco: Marco; imageBuffer: Buffer | null }[] }>();
+
+    for (const item of items) {
+      const catName = item.marco.categoria?.nombre || 'Colección General';
+      if (!categoryGroups.has(catName)) {
+        categoryGroups.set(catName, { categoryName: catName, items: [] });
+      }
+      categoryGroups.get(catName)!.items.push(item);
+    }
+
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({ margin: 40, size: 'A4' });
       const buffers: Buffer[] = [];
@@ -412,73 +489,92 @@ export class CatalogoService {
 
       let currentY = startY + 26;
 
-      items.forEach(({ marco, imageBuffer }, index) => {
-        // Page break check (each card is 92pt)
-        if (currentY + 100 > doc.page.height - 45) {
+      for (const group of categoryGroups.values()) {
+        // Section Header check (needs at least header + 1 card = 125pt)
+        if (currentY + 125 > doc.page.height - 45) {
           doc.addPage();
           currentY = 40;
         }
 
-        // Card container
-        doc.roundedRect(40, currentY, 515, 90, 6)
-          .fillAndStroke(index % 2 === 0 ? '#FAF6F0' : '#FFFFFF', '#E8DFD8');
+        // Category Section Header Ribbon
+        doc.roundedRect(40, currentY, 515, 22, 4).fill('#8B4513');
+        doc.fillColor('#FFFFFF').fontSize(10).font('Helvetica-Bold')
+          .text(`CATEGORÍA: ${group.categoryName.toUpperCase()}`, 50, currentY + 6);
+        doc.fontSize(8.5).font('Helvetica')
+          .text(`${group.items.length} ${group.items.length === 1 ? 'modelo' : 'modelos'}`, 400, currentY + 7, { align: 'right', width: 145 });
 
-        // Image thumbnail container
-        const imgBoxX = 48;
-        const imgBoxY = currentY + 8;
-        const imgBoxW = 74;
-        const imgBoxH = 74;
-        doc.roundedRect(imgBoxX, imgBoxY, imgBoxW, imgBoxH, 4).fillAndStroke('#FFFFFF', '#E8DFD8');
+        currentY += 28;
 
-        if (imageBuffer) {
-          try {
-            doc.image(imageBuffer, imgBoxX + 2, imgBoxY + 2, {
-              fit: [imgBoxW - 4, imgBoxH - 4],
-              align: 'center',
-              valign: 'center',
-            });
-          } catch {
-            doc.fillColor('#A89B8C').fontSize(8).font('Helvetica')
-              .text('🖼️ Marco', imgBoxX, imgBoxY + 32, { width: imgBoxW, align: 'center' });
+        for (const { marco, imageBuffer } of group.items) {
+          // Page break check (each card is 90pt)
+          if (currentY + 98 > doc.page.height - 45) {
+            doc.addPage();
+            currentY = 40;
           }
-        } else {
-          doc.fillColor('#A89B8C').fontSize(8).font('Helvetica')
-            .text('🖼️ Sin Foto', imgBoxX, imgBoxY + 32, { width: imgBoxW, align: 'center' });
+
+          // Card container
+          doc.roundedRect(40, currentY, 515, 90, 6)
+            .fillAndStroke('#FFFFFF', '#E8DFD8');
+
+          // Image thumbnail container
+          const imgBoxX = 48;
+          const imgBoxY = currentY + 8;
+          const imgBoxW = 74;
+          const imgBoxH = 74;
+          doc.roundedRect(imgBoxX, imgBoxY, imgBoxW, imgBoxH, 4).fillAndStroke('#FFFFFF', '#E8DFD8');
+
+          if (imageBuffer) {
+            try {
+              doc.image(imageBuffer, imgBoxX + 2, imgBoxY + 2, {
+                fit: [imgBoxW - 4, imgBoxH - 4],
+                align: 'center',
+                valign: 'center',
+              });
+            } catch {
+              doc.fillColor('#A89B8C').fontSize(8).font('Helvetica')
+                .text('🖼️ Marco', imgBoxX, imgBoxY + 32, { width: imgBoxW, align: 'center' });
+            }
+          } else {
+            doc.fillColor('#A89B8C').fontSize(8).font('Helvetica')
+              .text('🖼️ Sin Foto', imgBoxX, imgBoxY + 32, { width: imgBoxW, align: 'center' });
+          }
+
+          // Text & details
+          const textX = 132;
+          doc.fillColor('#5C2C0B').fontSize(12).font('Helvetica-Bold')
+            .text(marco.nombre, textX, currentY + 10, { width: 250, ellipsis: true });
+
+          doc.fillColor('#D27D2D').fontSize(8.5).font('Helvetica-Bold')
+            .text(`CATEGORÍA: ${marco.categoria?.nombre?.toUpperCase() || 'GENERAL'}`, textX, currentY + 26);
+
+          doc.fillColor('#444444').fontSize(9).font('Helvetica')
+            .text(`• Tipo de Madera: `, textX, currentY + 40, { continued: true })
+            .font('Helvetica-Bold').text(marco.tipoMadera);
+
+          doc.font('Helvetica')
+            .text(`• Dimensiones: `, textX, currentY + 54, { continued: true })
+            .font('Helvetica-Bold').text(marco.dimensiones);
+
+          if (Number(marco.precioCarton) > 0) {
+            doc.fillColor('#78350F').fontSize(8.5).font('Helvetica-Oblique')
+              .text(`• Con fondo de cartón: +Bs. ${Number(marco.precioCarton).toFixed(2)}`, textX, currentY + 68);
+          }
+
+          // Price and Availability (Right side)
+          const statusText = marco.disponible ? 'DISPONIBLE' : 'AGOTADO';
+          const statusColor = marco.disponible ? '#2E7D32' : '#C62828';
+
+          doc.fillColor(statusColor).fontSize(8.5).font('Helvetica-Bold')
+            .text(statusText, 385, currentY + 12, { align: 'right', width: 160 });
+
+          doc.fillColor('#8B4513').fontSize(15).font('Helvetica-Bold')
+            .text(`Bs. ${Number(marco.precio).toFixed(2)}`, 385, currentY + 44, { align: 'right', width: 160 });
+
+          currentY += 96;
         }
 
-        // Text & details
-        const textX = 132;
-        doc.fillColor('#5C2C0B').fontSize(12).font('Helvetica-Bold')
-          .text(marco.nombre, textX, currentY + 10, { width: 250, ellipsis: true });
-
-        doc.fillColor('#D27D2D').fontSize(8.5).font('Helvetica-Bold')
-          .text(`CATEGORÍA: ${marco.categoria?.nombre?.toUpperCase() || 'GENERAL'}`, textX, currentY + 26);
-
-        doc.fillColor('#444444').fontSize(9).font('Helvetica')
-          .text(`• Tipo de Madera: `, textX, currentY + 40, { continued: true })
-          .font('Helvetica-Bold').text(marco.tipoMadera);
-
-        doc.font('Helvetica')
-          .text(`• Dimensiones: `, textX, currentY + 54, { continued: true })
-          .font('Helvetica-Bold').text(marco.dimensiones);
-
-        if (Number(marco.precioCarton) > 0) {
-          doc.fillColor('#78350F').fontSize(8.5).font('Helvetica-Oblique')
-            .text(`• Con fondo de cartón: +Bs. ${Number(marco.precioCarton).toFixed(2)}`, textX, currentY + 68);
-        }
-
-        // Price and Availability (Right side)
-        const statusText = marco.disponible ? 'DISPONIBLE' : 'AGOTADO';
-        const statusColor = marco.disponible ? '#2E7D32' : '#C62828';
-
-        doc.fillColor(statusColor).fontSize(8.5).font('Helvetica-Bold')
-          .text(statusText, 385, currentY + 12, { align: 'right', width: 160 });
-
-        doc.fillColor('#8B4513').fontSize(15).font('Helvetica-Bold')
-          .text(`Bs. ${Number(marco.precio).toFixed(2)}`, 385, currentY + 44, { align: 'right', width: 160 });
-
-        currentY += 98;
-      });
+        currentY += 10; // Spacing after category group
+      }
 
       // Footer
       const range = doc.bufferedPageRange();

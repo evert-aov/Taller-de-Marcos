@@ -159,89 +159,111 @@
         </span>
       </div>
 
-      <!-- Frames Grid -->
-      <div class="frames-grid">
-        @for (marco of marcos(); track marco.id) {
-          <div class="frame-card" [class.is-unavailable]="!marco.disponible">
-            <div class="card-img-wrap" (click)="openDetail(marco)">
-              @if (marco.imagenUrl) {
-                <img
-                  [src]="marco.imagenUrl"
-                  [alt]="marco.nombre"
-                  loading="lazy"
-                />
-              } @else {
-                <div class="card-no-img-box">
-                  <ng-icon name="heroPhoto" size="40"></ng-icon>
-                  <span>Marco de Madera</span>
-                </div>
-              }
-              <span
-                class="badge card-badge"
-                [ngClass]="marco.disponible ? 'badge-success' : 'badge-danger'"
-              >
-                <ng-icon [name]="marco.disponible ? 'heroCheck' : 'heroXMark'" size="12"></ng-icon>
-                <span>{{ marco.disponible ? 'Disponible' : 'Agotado' }}</span>
-              </span>
-              <div class="card-overlay">
-                <span class="overlay-text">
-                  <ng-icon name="heroEye" size="16"></ng-icon>
-                  <span>Ver Detalle</span>
-                </span>
+      <!-- Category Grouped Sections -->
+      @for (group of marcosByCategory(); track group.categoryName) {
+        <section class="category-catalog-group">
+          <div class="category-group-header">
+            <div class="header-left">
+              <div class="cat-group-icon">
+                <ng-icon name="heroFolder" size="20"></ng-icon>
+              </div>
+              <div class="cat-group-info">
+                <h3 class="cat-group-title">{{ group.categoryName }}</h3>
+                @if (group.categoryDescription) {
+                  <p class="cat-group-desc">{{ group.categoryDescription }}</p>
+                }
               </div>
             </div>
-
-            <div class="card-content">
-              <span class="card-category">{{ marco.categoria?.nombre || 'General' }}</span>
-              <h3 class="card-title" (click)="openDetail(marco)">{{ marco.nombre }}</h3>
-
-              <div class="card-specs">
-                <div class="spec-row">
-                  <span class="spec-label">Madera:</span>
-                  <span class="spec-val wood-chip">{{ marco.tipoMadera }}</span>
-                </div>
-                <div class="spec-row">
-                  <span class="spec-label">Dimensiones:</span>
-                  <span class="spec-val">{{ marco.dimensiones }}</span>
-                </div>
-              </div>
-
-              <!-- Option for carton support if Marco Vacío or configured -->
-              @if (hasCartonOption(marco)) {
-                <div class="carton-option-box" (click)="$event.stopPropagation()">
-                  <label class="carton-checkbox-label">
-                    <input
-                      type="checkbox"
-                      [checked]="isCartonSelected(marco.id)"
-                      (change)="toggleCarton(marco.id)"
-                    />
-                    <span class="carton-text">
-                      Con fondo de cartón <strong>(+Bs. {{ getCartonPrice(marco) | number:'1.2-2' }})</strong>
-                    </span>
-                  </label>
-                </div>
-              }
-
-              <div class="card-footer">
-                <div class="price-wrap">
-                  <span class="price-currency">Bs.</span>
-                  <span class="price-amount">{{ calculatePrice(marco) | number:'1.2-2' }}</span>
-                  @if (isCartonSelected(marco.id)) {
-                    <span class="carton-badge-pill">c/ cartón</span>
-                  }
-                </div>
-                <button
-                  class="btn btn-secondary btn-sm"
-                  (click)="openDetail(marco)"
-                >
-                  <ng-icon name="heroEye" size="14"></ng-icon>
-                  <span>Detalle</span>
-                </button>
-              </div>
-            </div>
+            <span class="cat-group-count">
+              {{ group.marcos.length }} {{ group.marcos.length === 1 ? 'modelo' : 'modelos' }}
+            </span>
           </div>
-        }
-      </div>
+
+          <!-- Frames Grid for this category -->
+          <div class="frames-grid">
+            @for (marco of group.marcos; track marco.id) {
+              <div class="frame-card" [class.is-unavailable]="!marco.disponible">
+                <div class="card-img-wrap" (click)="openDetail(marco)">
+                  @if (marco.imagenUrl) {
+                    <img
+                      [src]="marco.imagenUrl"
+                      [alt]="marco.nombre"
+                      loading="lazy"
+                    />
+                  } @else {
+                    <div class="card-no-img-box">
+                      <ng-icon name="heroPhoto" size="40"></ng-icon>
+                      <span>Marco de Madera</span>
+                    </div>
+                  }
+                  <span
+                    class="badge card-badge"
+                    [ngClass]="marco.disponible ? 'badge-success' : 'badge-danger'"
+                  >
+                    <ng-icon [name]="marco.disponible ? 'heroCheck' : 'heroXMark'" size="12"></ng-icon>
+                    <span>{{ marco.disponible ? 'Disponible' : 'Agotado' }}</span>
+                  </span>
+                  <div class="card-overlay">
+                    <span class="overlay-text">
+                      <ng-icon name="heroEye" size="16"></ng-icon>
+                      <span>Ver Detalle</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="card-content">
+                  <span class="card-category">{{ marco.categoria?.nombre || 'General' }}</span>
+                  <h3 class="card-title" (click)="openDetail(marco)">{{ marco.nombre }}</h3>
+
+                  <div class="card-specs">
+                    <div class="spec-row">
+                      <span class="spec-label">Madera:</span>
+                      <span class="spec-val wood-chip">{{ marco.tipoMadera }}</span>
+                    </div>
+                    <div class="spec-row">
+                      <span class="spec-label">Dimensiones:</span>
+                      <span class="spec-val">{{ marco.dimensiones }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Option for carton support if configured -->
+                  @if (hasCartonOption(marco)) {
+                    <div class="carton-option-box" (click)="$event.stopPropagation()">
+                      <label class="carton-checkbox-label">
+                        <input
+                          type="checkbox"
+                          [checked]="isCartonSelected(marco.id)"
+                          (change)="toggleCarton(marco.id)"
+                        />
+                        <span class="carton-text">
+                          Con fondo de cartón <strong>(+Bs. {{ getCartonPrice(marco) | number:'1.2-2' }})</strong>
+                        </span>
+                      </label>
+                    </div>
+                  }
+
+                  <div class="card-footer">
+                    <div class="price-wrap">
+                      <span class="price-currency">Bs.</span>
+                      <span class="price-amount">{{ calculatePrice(marco) | number:'1.2-2' }}</span>
+                      @if (isCartonSelected(marco.id)) {
+                        <span class="carton-badge-pill">c/ cartón</span>
+                      }
+                    </div>
+                    <button
+                      class="btn btn-secondary btn-sm"
+                      (click)="openDetail(marco)"
+                    >
+                      <ng-icon name="heroEye" size="14"></ng-icon>
+                      <span>Detalle</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
     }
   </main>
 
