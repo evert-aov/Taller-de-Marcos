@@ -214,33 +214,46 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     };
   }
 
+  private slugify(text?: string): string {
+    if (!text) return 'marcos-madera';
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+  }
+
   downloadPdf() {
     const url = this.catalogoService.getPdfUrl(this.currentFilter);
     window.open(url, '_blank');
   }
 
   downloadHtml() {
+    const activeCat = this.categorias().find((c) => c.id === this.selectedCategory);
+    const slug = activeCat ? this.slugify(activeCat.nombre) : 'marcos-madera';
     const url = this.catalogoService.getHtmlUrl(this.currentFilter);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'catalogo-marcos-madera.html';
+    a.download = `catalogo-${slug}.html`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
   }
 
-  downloadCategoryPdf(categoryId?: string) {
+  downloadCategoryPdf(categoryId?: string, categoryName?: string) {
     const filter: FilterMarco = { ...this.currentFilter, categoriaId: categoryId };
     const url = this.catalogoService.getPdfUrl(filter);
     window.open(url, '_blank');
   }
 
-  downloadCategoryHtml(categoryId?: string) {
+  downloadCategoryHtml(categoryId?: string, categoryName?: string) {
     const filter: FilterMarco = { ...this.currentFilter, categoriaId: categoryId };
+    const slug = this.slugify(categoryName);
     const url = this.catalogoService.getHtmlUrl(filter);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'catalogo-categoria.html';
+    a.download = `catalogo-${slug}.html`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

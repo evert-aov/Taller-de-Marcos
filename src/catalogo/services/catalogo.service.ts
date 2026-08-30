@@ -28,6 +28,33 @@ export class CatalogoService {
     };
   }
 
+  async getExportFilename(filter?: FilterMarcoDto, ext = 'pdf'): Promise<string> {
+    if (filter?.categoriaId) {
+      const cat = await this.categoriaRepo.findById(filter.categoriaId);
+      if (cat) {
+        const slug = cat.slug || this.slugify(cat.nombre);
+        return `catalogo-${slug}.${ext}`;
+      }
+    } else if (filter?.categoriaSlug) {
+      const cat = await this.categoriaRepo.findBySlug(filter.categoriaSlug);
+      if (cat) {
+        return `catalogo-${cat.slug}.${ext}`;
+      }
+      return `catalogo-${this.slugify(filter.categoriaSlug)}.${ext}`;
+    }
+    return `catalogo-marcos-madera.${ext}`;
+  }
+
+  private slugify(text: string): string {
+    return text
+      .toString()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+  }
+
   async generateHtmlCatalog(filter?: FilterMarcoDto): Promise<string> {
     const marcos = await this.marcoRepo.findAll(filter);
     const generationDate = new Date().toLocaleDateString('es-ES', {

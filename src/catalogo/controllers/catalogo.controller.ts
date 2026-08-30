@@ -13,10 +13,12 @@ export class CatalogoController {
   }
 
   @Get('html')
-  @Header('Content-Type', 'text/html; charset=utf-8')
-  @Header('Content-Disposition', 'attachment; filename="catalogo-marcos-madera.html"')
-  async exportHtml(@Query() filter: FilterMarcoDto) {
-    return this.catalogoService.generateHtmlCatalog(filter);
+  async exportHtml(@Query() filter: FilterMarcoDto, @Res() res: Response) {
+    const html = await this.catalogoService.generateHtmlCatalog(filter);
+    const filename = await this.catalogoService.getExportFilename(filter, 'html');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.end(html);
   }
 
   @Get('html-view')
@@ -28,8 +30,9 @@ export class CatalogoController {
   @Get('pdf')
   async exportPdf(@Query() filter: FilterMarcoDto, @Res() res: Response) {
     const pdfBuffer = await this.catalogoService.generatePdfCatalog(filter);
+    const filename = await this.catalogoService.getExportFilename(filter, 'pdf');
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="catalogo-marcos-madera.pdf"');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Content-Length', pdfBuffer.length.toString());
     res.end(pdfBuffer);
   }

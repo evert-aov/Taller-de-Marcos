@@ -183,7 +183,7 @@
             <div class="cat-group-actions">
               <button
                 class="btn-cat-dl btn-cat-pdf"
-                (click)="downloadCategoryPdf(group.categoryId)"
+                (click)="downloadCategoryPdf(group.categoryId, group.categoryName)"
                 title="Descargar esta categoría en PDF"
               >
                 <ng-icon name="heroArrowDownTray" size="13"></ng-icon>
@@ -191,7 +191,7 @@
               </button>
               <button
                 class="btn-cat-dl btn-cat-html"
-                (click)="downloadCategoryHtml(group.categoryId)"
+                (click)="downloadCategoryHtml(group.categoryId, group.categoryName)"
                 title="Descargar esta categoría en HTML"
               >
                 <ng-icon name="heroGlobeAlt" size="13"></ng-icon>
