@@ -1,0 +1,356 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>Gestión de Marcos de Madera</h1>
+      <p class="subtitle">Agrega, edita y gestiona el inventario de marcos en catálogo</p>
+    </div>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <ng-icon name="heroPlus" size="18"></ng-icon>
+      <span>Nuevo Marco</span>
+    </button>
+  </div>
+
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <ng-icon name="heroCheckCircle" size="18"></ng-icon>
+      <span>{{ successMessage() }}</span>
+    </div>
+  }
+
+  <!-- Filters Bar -->
+  <div class="admin-filters">
+    <div class="search-box">
+      <ng-icon name="heroMagnifyingGlass" size="18" class="search-icon"></ng-icon>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onFilterChange()"
+        placeholder="Buscar por nombre, madera o dimensiones..."
+        class="form-control"
+      />
+    </div>
+
+    <div class="filter-selects">
+      <select
+        [(ngModel)]="selectedCategory"
+        (ngModelChange)="onFilterChange()"
+        class="form-control"
+      >
+        <option value="">Todas las Categorías</option>
+        @for (cat of categorias(); track cat.id) {
+          <option [value]="cat.id">{{ cat.nombre }}</option>
+        }
+      </select>
+
+      <select
+        [(ngModel)]="selectedWood"
+        (ngModelChange)="onFilterChange()"
+        class="form-control"
+      >
+        <option value="">Todas las Maderas</option>
+        @for (wood of woodTypes(); track wood) {
+          <option [value]="wood">{{ wood }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Marcos Table -->
+  <div class="table-container">
+    @if (loading()) {
+      <div class="loading-state">
+        <p>Cargando marcos...</p>
+      </div>
+    } @else if (marcos().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon-box">
+          <ng-icon name="heroPhoto" size="48"></ng-icon>
+        </div>
+        <h3>No se encontraron marcos</h3>
+        <p>Registra nuevos marcos asignados a tus categorías</p>
+        <button class="btn btn-primary btn-sm" (click)="openCreateModal()">
+          <ng-icon name="heroPlus" size="16"></ng-icon>
+          <span>Registrar Marco</span>
+        </button>
+      </div>
+    } @else {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Imagen</th>
+            <th>Nombre & Estilo</th>
+            <th>Categoría</th>
+            <th>Madera</th>
+            <th>Dimensiones</th>
+            <th>Precio (Bs.)</th>
+            <th>Estado</th>
+            <th class="text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (marco of marcos(); track marco.id) {
+            <tr>
+              <td class="img-cell">
+                <img
+                  [src]="marco.imagenUrl || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=60'"
+                  [alt]="marco.nombre"
+                  class="thumb-img"
+                />
+              </td>
+              <td>
+                <div class="marco-info">
+                  <strong>{{ marco.nombre }}</strong>
+                </div>
+              </td>
+              <td>
+                <span class="badge badge-wood">
+                  {{ marco.categoria?.nombre || 'General' }}
+                </span>
+              </td>
+              <td>
+                <span class="wood-tag">{{ marco.tipoMadera }}</span>
+              </td>
+              <td>
+                <span class="dim-tag">{{ marco.dimensiones }}</span>
+              </td>
+              <td>
+                <strong class="price-tag">Bs. {{ marco.precio | number:'1.2-2' }}</strong>
+                @if (marco.precioCarton && marco.precioCarton > 0) {
+                  <div class="carton-subtag">+Bs. {{ marco.precioCarton | number:'1.2-2' }} con cartón</div>
+                }
+              </td>
+              <td>
+                <button
+                  type="button"
+                  class="badge status-btn"
+                  [ngClass]="marco.disponible ? 'badge-success' : 'badge-danger'"
+                  (click)="toggleDisponible(marco)"
+                  title="Clic para alternar disponibilidad"
+                >
+                  <ng-icon [name]="marco.disponible ? 'heroCheck' : 'heroXMark'" size="14"></ng-icon>
+                  <span>{{ marco.disponible ? 'Disponible' : 'Agotado' }}</span>
+                </button>
+              </td>
+              <td class="text-right actions-cell">
+                <button
+                  class="btn btn-secondary btn-sm"
+                  (click)="openEditModal(marco)"
+                  title="Editar marco"
+                >
+                  <ng-icon name="heroPencilSquare" size="16"></ng-icon>
+                </button>
+                <button
+                  class="btn btn-danger btn-sm"
+                  (click)="deleteMarco(marco)"
+                  title="Eliminar marco"
+                >
+                  <ng-icon name="heroTrash" size="16"></ng-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+  <!-- Create/Edit Modal -->
+  @if (showModal()) {
+    <div class="modal-backdrop" (click)="closeModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ isEditing() ? 'Editar Marco de Madera' : 'Nuevo Marco de Madera' }}</h3>
+          <button class="close-btn" (click)="closeModal()">
+            <ng-icon name="heroXMark" size="20"></ng-icon>
+          </button>
+        </div>
+
+        <form (ngSubmit)="saveMarco()">
+          <div class="modal-body">
+            @if (errorMessage()) {
+              <div class="alert alert-danger">
+                <ng-icon name="heroExclamationTriangle" size="18"></ng-icon>
+                <span>{{ errorMessage() }}</span>
+              </div>
+            }
+
+            <div class="form-group">
+              <label for="nombre">Nombre del Marco *</label>
+              <input
+                type="text"
+                id="nombre"
+                name="nombre"
+                class="form-control"
+                [(ngModel)]="formNombre"
+                placeholder="Ej. Marco Roble Rústico Biselado"
+                required
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="categoriaId">Categoría *</label>
+                <select
+                  id="categoriaId"
+                  name="categoriaId"
+                  class="form-control"
+                  [(ngModel)]="formCategoriaId"
+                  required
+                >
+                  <option value="" disabled>Seleccione categoría</option>
+                  @for (cat of categorias(); track cat.id) {
+                    <option [value]="cat.id">{{ cat.nombre }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="tipoMadera">Tipo de Madera *</label>
+                <input
+                  type="text"
+                  id="tipoMadera"
+                  name="tipoMadera"
+                  class="form-control"
+                  [(ngModel)]="formTipoMadera"
+                  placeholder="Ej. Roble, Cedro, Nogal, Caoba, Pino"
+                  list="wood-options"
+                  required
+                />
+                <datalist id="wood-options">
+                  <option value="Roble"></option>
+                  <option value="Cedro"></option>
+                  <option value="Nogal"></option>
+                  <option value="Caoba"></option>
+                  <option value="Pino"></option>
+                  <option value="Haya"></option>
+                  <option value="Cerezo"></option>
+                </datalist>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dimensiones">Dimensiones *</label>
+                <input
+                  type="text"
+                  id="dimensiones"
+                  name="dimensiones"
+                  class="form-control"
+                  [(ngModel)]="formDimensiones"
+                  placeholder="Ej. 30x40 cm, 50x70 cm, A3"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="precio">Precio Base (Bs.) *</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  id="precio"
+                  name="precio"
+                  class="form-control"
+                  [(ngModel)]="formPrecio"
+                  placeholder="45.00"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- Optional Carton Extra Price -->
+            <div class="form-group">
+              <label for="precioCarton">
+                Precio Adicional con Cartón (Bs.)
+                @if (isCategoriaVacio()) {
+                  <span class="badge badge-wood ml-1">Recomendado para Marco Vacío</span>
+                }
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                id="precioCarton"
+                name="precioCarton"
+                class="form-control"
+                [(ngModel)]="formPrecioCarton"
+                placeholder="5.00"
+              />
+              <span class="hint">Costo adicional que se sumará si el cliente solicita el marco con fondo de cartón (ej. 5.00 Bs.)</span>
+            </div>
+
+            <!-- Image Upload & URL -->
+            <div class="form-group">
+              <label>Imagen del Marco</label>
+              <div class="image-upload-box">
+                <div class="upload-controls">
+                  <label class="btn btn-secondary btn-sm upload-btn">
+                    <ng-icon name="heroArrowUpTray" size="16"></ng-icon>
+                    <span>Subir Archivo de Imagen</span>
+                    <input
+                      type="file"
+                      (change)="onFileSelected($event)"
+                      accept="image/*"
+                      style="display: none"
+                    />
+                  </label>
+                  @if (uploadingImage()) {
+                    <span class="uploading-text">Subiendo imagen...</span>
+                  }
+                </div>
+
+                <div class="url-input-wrap">
+                  <label for="imagenUrl" class="hint">O ingrese una URL de imagen directa:</label>
+                  <input
+                    type="url"
+                    id="imagenUrl"
+                    name="imagenUrl"
+                    class="form-control"
+                    [(ngModel)]="formImagenUrl"
+                    (ngModelChange)="imagePreview.set(formImagenUrl)"
+                    placeholder="https://..."
+                  />
+                </div>
+
+                @if (imagePreview() || formImagenUrl) {
+                  <div class="preview-wrap">
+                    <img
+                      [src]="imagePreview() || formImagenUrl"
+                      alt="Vista previa"
+                      class="img-preview"
+                      (error)="imagePreview.set('https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=60')"
+                    />
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  name="disponible"
+                  [(ngModel)]="formDisponible"
+                />
+                <span>Marco disponible en stock para clientes</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving()">
+              @if (saving()) {
+                <span>Guardando...</span>
+              } @else {
+                <span>{{ isEditing() ? 'Guardar Cambios' : 'Registrar Marco' }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,77 @@
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon-box">
+        <ng-icon name="heroPhoto" size="24"></ng-icon>
+      </div>
+      <div>
+        <h2>Taller Marcos</h2>
+        <span class="badge badge-wood">Administración</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a
+        routerLink="/admin/marcos"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+        <ng-icon name="heroPhoto" size="20" class="nav-icon"></ng-icon>
+        <span>Gestión de Marcos</span>
+      </a>
+
+      <a
+        routerLink="/admin/categorias"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+        <ng-icon name="heroFolder" size="20" class="nav-icon"></ng-icon>
+        <span>Categorías</span>
+      </a>
+
+      <div class="nav-divider"></div>
+
+      <a
+        routerLink="/"
+        class="nav-item nav-public"
+      >
+        <ng-icon name="heroGlobeAlt" size="20" class="nav-icon"></ng-icon>
+        <span>Ver Catálogo Público</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <ng-icon name="heroUserCircle" size="32" class="user-avatar-icon"></ng-icon>
+        <div class="user-details">
+          <span class="user-name">{{ authService.currentUser()?.name || 'Administrador' }}</span>
+          <span class="user-email">{{ authService.currentUser()?.email || 'admin@taller.com' }}</span>
+        </div>
+      </div>
+      <button (click)="authService.logout()" class="btn btn-secondary btn-sm btn-logout" title="Cerrar sesión">
+        <ng-icon name="heroArrowLeftOnRectangle" size="16"></ng-icon>
+        <span>Salir</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div class="topbar-title">
+        <span>Sistema de Gestión de Catálogo</span>
+      </div>
+      <div class="topbar-actions">
+        <a routerLink="/" class="btn btn-secondary btn-sm">
+          <ng-icon name="heroEye" size="16"></ng-icon>
+          <span>Vista Pública</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

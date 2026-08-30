@@ -1,0 +1,165 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>Gestión de Categorías</h1>
+      <p class="subtitle">Administra las líneas y estilos de marcos de madera</p>
+    </div>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <ng-icon name="heroPlus" size="18"></ng-icon>
+      <span>Nueva Categoría</span>
+    </button>
+  </div>
+
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <ng-icon name="heroCheckCircle" size="18"></ng-icon>
+      <span>{{ successMessage() }}</span>
+    </div>
+  }
+
+  <!-- Categorías Table -->
+  <div class="table-container">
+    @if (loading()) {
+      <div class="loading-state">
+        <p>Cargando categorías...</p>
+      </div>
+    } @else if (categorias().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon-box">
+          <ng-icon name="heroFolder" size="48"></ng-icon>
+        </div>
+        <h3>No hay categorías registradas</h3>
+        <p>Crea la primera categoría para organizar tus marcos</p>
+        <button class="btn btn-primary btn-sm" (click)="openCreateModal()">
+          <ng-icon name="heroPlus" size="16"></ng-icon>
+          <span>Crear Categoría</span>
+        </button>
+      </div>
+    } @else {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Slug</th>
+            <th>Descripción</th>
+            <th>Marcos Asociados</th>
+            <th class="text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cat of categorias(); track cat.id) {
+            <tr>
+              <td>
+                <strong>{{ cat.nombre }}</strong>
+              </td>
+              <td>
+                <code class="slug-tag">{{ cat.slug }}</code>
+              </td>
+              <td class="col-desc">
+                {{ cat.descripcion || '—' }}
+              </td>
+              <td>
+                <span class="badge badge-wood">
+                  {{ cat.marcos?.length || 0 }} marcos
+                </span>
+              </td>
+              <td class="text-right actions-cell">
+                <button
+                  class="btn btn-secondary btn-sm"
+                  (click)="openEditModal(cat)"
+                  title="Editar categoría"
+                >
+                  <ng-icon name="heroPencilSquare" size="16"></ng-icon>
+                </button>
+                <button
+                  class="btn btn-danger btn-sm"
+                  (click)="deleteCategoria(cat)"
+                  title="Eliminar categoría"
+                >
+                  <ng-icon name="heroTrash" size="16"></ng-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+  <!-- Create/Edit Modal -->
+  @if (showModal()) {
+    <div class="modal-backdrop" (click)="closeModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ isEditing() ? 'Editar Categoría' : 'Nueva Categoría' }}</h3>
+          <button class="close-btn" (click)="closeModal()">
+            <ng-icon name="heroXMark" size="20"></ng-icon>
+          </button>
+        </div>
+
+        <form (ngSubmit)="saveCategoria()">
+          <div class="modal-body">
+            @if (errorMessage()) {
+              <div class="alert alert-danger">
+                <ng-icon name="heroExclamationTriangle" size="18"></ng-icon>
+                <span>{{ errorMessage() }}</span>
+              </div>
+            }
+
+            <div class="form-group">
+              <label for="nombre">Nombre de la Categoría *</label>
+              <input
+                type="text"
+                id="nombre"
+                name="nombre"
+                class="form-control"
+                [(ngModel)]="formNombre"
+                (ngModelChange)="onNombreChange()"
+                placeholder="Ej. Marco Vacío para Dibujo, Marco Espejo"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="slug">Slug (URL amigable)</label>
+              <input
+                type="text"
+                id="slug"
+                name="slug"
+                class="form-control"
+                [(ngModel)]="formSlug"
+                placeholder="ej. marco-vacio-para-dibujo"
+              />
+              <span class="hint">Se genera automáticamente si se deja en blanco</span>
+            </div>
+
+            <div class="form-group">
+              <label for="descripcion">Descripción</label>
+              <textarea
+                id="descripcion"
+                name="descripcion"
+                class="form-control"
+                [(ngModel)]="formDescripcion"
+                placeholder="Breve descripción del estilo o acabados de esta categoría..."
+                rows="3"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving()">
+              @if (saving()) {
+                <span>Guardando...</span>
+              } @else {
+                <span>{{ isEditing() ? 'Guardar Cambios' : 'Crear Categoría' }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

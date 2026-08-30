@@ -1,0 +1,351 @@
+<div class="catalog-page">
+  <!-- Top Navigation Header -->
+  <header class="site-header">
+    <div class="container header-container">
+      <div class="brand">
+        <div class="brand-icon-box">
+          <ng-icon name="heroPhoto" size="26"></ng-icon>
+        </div>
+        <div class="brand-text">
+          <h1>Taller de Marcos</h1>
+          <span class="brand-sub">Madera Fina & Artesanía</span>
+        </div>
+      </div>
+
+      <nav class="header-nav">
+        @if (authService.isAuthenticated()) {
+          <a routerLink="/admin/marcos" class="btn btn-primary btn-sm">
+            <ng-icon name="heroAdjustmentsHorizontal" size="16"></ng-icon>
+            <span>Panel de Administración</span>
+          </a>
+          <button (click)="authService.logout()" class="btn btn-secondary btn-sm">
+            <ng-icon name="heroArrowLeftOnRectangle" size="16"></ng-icon>
+            <span>Cerrar Sesión</span>
+          </button>
+        } @else {
+          <a routerLink="/login" class="btn btn-secondary btn-sm">
+            <ng-icon name="heroLockClosed" size="16"></ng-icon>
+            <span>Acceso Administrador</span>
+          </a>
+        }
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Banner -->
+  <section class="hero-banner">
+    <div class="container hero-content">
+      <div class="hero-text">
+        <span class="hero-tag">
+          <ng-icon name="heroSparkles" size="14"></ng-icon>
+          <span>Colección Artesanal</span>
+        </span>
+        <h2>Catálogo de Marcos de Madera a Medida</h2>
+        <p>
+          Descubre nuestra selección de molduras y marcos finos (Marco Vacío para Dibujo, Marco Dibujo, Marco Espejo). Diseñados con precisión y calidez natural.
+        </p>
+        
+        <!-- Export / Download Buttons -->
+        <div class="export-actions">
+          <button class="btn btn-pdf" (click)="downloadPdf()" title="Descargar catálogo en PDF">
+            <ng-icon name="heroArrowDownTray" size="18"></ng-icon>
+            <span>Descargar Catálogo (PDF)</span>
+          </button>
+          <button class="btn btn-html" (click)="downloadHtml()" title="Descargar catálogo en HTML">
+            <ng-icon name="heroGlobeAlt" size="18"></ng-icon>
+            <span>Descargar Catálogo (HTML)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content & Filters -->
+  <main class="container catalog-main">
+    <!-- Category Chips Bar -->
+    <div class="category-tabs-bar">
+      <button
+        class="cat-chip"
+        [class.active]="selectedCategory === ''"
+        (click)="setCategory('')"
+      >
+        <ng-icon name="heroSquares2x2" size="16"></ng-icon>
+        <span>Todas las Categorías</span>
+      </button>
+      @for (cat of categorias(); track cat.id) {
+        <button
+          class="cat-chip"
+          [class.active]="selectedCategory === cat.id"
+          (click)="setCategory(cat.id)"
+        >
+          <ng-icon name="heroFolder" size="16"></ng-icon>
+          <span>{{ cat.nombre }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- Filter Control Toolbar: 1 Row with 3 Columns in Desktop -->
+    <div class="filter-toolbar">
+      <!-- Column 1: Search Input -->
+      <div class="filter-col search-col">
+        <div class="search-input-group">
+          <ng-icon name="heroMagnifyingGlass" size="18" class="search-icon"></ng-icon>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Buscar marco por nombre, madera o tamaño..."
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onFilterChange()"
+          />
+        </div>
+      </div>
+
+      <!-- Column 2: Wood Select Dropdown -->
+      <div class="filter-col wood-col">
+        <select
+          class="form-control filter-select"
+          [(ngModel)]="selectedWood"
+          (ngModelChange)="onFilterChange()"
+        >
+          <option value="">Tipo de Madera: Todos</option>
+          @for (wood of woodTypes(); track wood) {
+            <option [value]="wood">{{ wood }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Column 3: Availability Toggle & Clear -->
+      <div class="filter-col availability-col">
+        <label class="availability-toggle">
+          <input
+            type="checkbox"
+            [(ngModel)]="onlyAvailable"
+            (ngModelChange)="onFilterChange()"
+          />
+          <span>Solo Disponibles</span>
+        </label>
+
+        @if (searchTerm || selectedCategory || selectedWood || onlyAvailable) {
+          <button class="btn btn-secondary btn-sm btn-clear" (click)="resetFilters()" title="Limpiar filtros">
+            <ng-icon name="heroArrowPath" size="14"></ng-icon>
+            <span>Limpiar</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Product Grid State -->
+    @if (loading()) {
+      <div class="catalog-loading">
+        <div class="spinner"></div>
+        <p>Cargando marcos de madera...</p>
+      </div>
+    } @else if (marcos().length === 0) {
+      <div class="catalog-empty">
+        <div class="empty-icon-box">
+          <ng-icon name="heroPhoto" size="56"></ng-icon>
+        </div>
+        <h3>No se encontraron marcos con los filtros seleccionados</h3>
+        <p>Actualmente las categorías no tienen marcos registrados o no coinciden con los criterios.</p>
+        <button class="btn btn-secondary btn-sm" (click)="resetFilters()">
+          <ng-icon name="heroArrowPath" size="16"></ng-icon>
+          <span>Restablecer Filtros</span>
+        </button>
+      </div>
+    } @else {
+      <div class="results-header">
+        <span class="count-badge">
+          Mostrando <strong>{{ marcos().length }}</strong> marcos
+        </span>
+      </div>
+
+      <!-- Frames Grid -->
+      <div class="frames-grid">
+        @for (marco of marcos(); track marco.id) {
+          <div class="frame-card" [class.is-unavailable]="!marco.disponible">
+            <div class="card-img-wrap" (click)="openDetail(marco)">
+              <img
+                [src]="marco.imagenUrl || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=60'"
+                [alt]="marco.nombre"
+                loading="lazy"
+              />
+              <span
+                class="badge card-badge"
+                [ngClass]="marco.disponible ? 'badge-success' : 'badge-danger'"
+              >
+                <ng-icon [name]="marco.disponible ? 'heroCheck' : 'heroXMark'" size="12"></ng-icon>
+                <span>{{ marco.disponible ? 'Disponible' : 'Agotado' }}</span>
+              </span>
+              <div class="card-overlay">
+                <span class="overlay-text">
+                  <ng-icon name="heroEye" size="16"></ng-icon>
+                  <span>Ver Detalle</span>
+                </span>
+              </div>
+            </div>
+
+            <div class="card-content">
+              <span class="card-category">{{ marco.categoria?.nombre || 'General' }}</span>
+              <h3 class="card-title" (click)="openDetail(marco)">{{ marco.nombre }}</h3>
+
+              <div class="card-specs">
+                <div class="spec-row">
+                  <span class="spec-label">Madera:</span>
+                  <span class="spec-val wood-chip">{{ marco.tipoMadera }}</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Dimensiones:</span>
+                  <span class="spec-val">{{ marco.dimensiones }}</span>
+                </div>
+              </div>
+
+              <!-- Option for carton support if Marco Vacío or configured -->
+              @if (hasCartonOption(marco)) {
+                <div class="carton-option-box" (click)="$event.stopPropagation()">
+                  <label class="carton-checkbox-label">
+                    <input
+                      type="checkbox"
+                      [checked]="isCartonSelected(marco.id)"
+                      (change)="toggleCarton(marco.id)"
+                    />
+                    <span class="carton-text">
+                      Con fondo de cartón <strong>(+Bs. {{ getCartonPrice(marco) | number:'1.2-2' }})</strong>
+                    </span>
+                  </label>
+                </div>
+              }
+
+              <div class="card-footer">
+                <div class="price-wrap">
+                  <span class="price-currency">Bs.</span>
+                  <span class="price-amount">{{ calculatePrice(marco) | number:'1.2-2' }}</span>
+                  @if (isCartonSelected(marco.id)) {
+                    <span class="carton-badge-pill">c/ cartón</span>
+                  }
+                </div>
+                <button
+                  class="btn btn-secondary btn-sm"
+                  (click)="openDetail(marco)"
+                >
+                  <ng-icon name="heroEye" size="14"></ng-icon>
+                  <span>Detalle</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </main>
+
+  <!-- Frame Detail Modal -->
+  @if (selectedMarco()) {
+    <div class="modal-backdrop" (click)="closeDetail()">
+      <div class="modal-card modal-detail" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Detalle del Marco</h3>
+          <button class="close-btn" (click)="closeDetail()">
+            <ng-icon name="heroXMark" size="20"></ng-icon>
+          </button>
+        </div>
+        <div class="modal-body detail-body">
+          <div class="detail-img-col">
+            <img
+              [src]="selectedMarco()!.imagenUrl || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=60'"
+              [alt]="selectedMarco()!.nombre"
+            />
+          </div>
+          <div class="detail-info-col">
+            <span class="badge badge-wood mb-2">
+              {{ selectedMarco()!.categoria?.nombre }}
+            </span>
+            <h2>{{ selectedMarco()!.nombre }}</h2>
+
+            <div class="detail-status">
+              <span
+                class="badge"
+                [ngClass]="selectedMarco()!.disponible ? 'badge-success' : 'badge-danger'"
+              >
+                <ng-icon [name]="selectedMarco()!.disponible ? 'heroCheck' : 'heroXMark'" size="14"></ng-icon>
+                <span>{{ selectedMarco()!.disponible ? 'Disponible para Entrega Inmediata' : 'Agotado Temporalmente' }}</span>
+              </span>
+            </div>
+
+            <div class="detail-specs-table">
+              <div class="detail-spec-row">
+                <span class="label">Tipo de Madera:</span>
+                <span class="value">{{ selectedMarco()!.tipoMadera }}</span>
+              </div>
+              <div class="detail-spec-row">
+                <span class="label">Dimensiones:</span>
+                <span class="value">{{ selectedMarco()!.dimensiones }}</span>
+              </div>
+              <div class="detail-spec-row">
+                <span class="label">Categoría:</span>
+                <span class="value">{{ selectedMarco()!.categoria?.nombre }}</span>
+              </div>
+              <div class="detail-spec-row">
+                <span class="label">Precio Base:</span>
+                <span class="value">Bs. {{ selectedMarco()!.precio | number:'1.2-2' }}</span>
+              </div>
+              @if (selectedMarco()!.categoria?.descripcion) {
+                <div class="detail-spec-row">
+                  <span class="label">Descripción de Línea:</span>
+                  <span class="value desc-text">{{ selectedMarco()!.categoria?.descripcion }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Optional carton selector in modal -->
+            @if (hasCartonOption(selectedMarco()!)) {
+              <div class="detail-carton-picker">
+                <label class="carton-picker-label">
+                  <input
+                    type="checkbox"
+                    [checked]="detailWithCarton()"
+                    (change)="detailWithCarton.set(!detailWithCarton())"
+                  />
+                  <div class="picker-text">
+                    <strong>Incluir fondo de cartón (+Bs. {{ getCartonPrice(selectedMarco()!) | number:'1.2-2' }})</strong>
+                    <span>Soporte rígido trasero para dibujo, pintura o ilustración</span>
+                  </div>
+                </label>
+              </div>
+            }
+
+            <div class="detail-price-box">
+              <span class="label">Precio Total:</span>
+              <span class="price">Bs. {{ calculateDetailPrice(selectedMarco()!) | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeDetail()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <div class="footer-brand">
+        <div class="brand-inline">
+          <ng-icon name="heroPhoto" size="20"></ng-icon>
+          <span>Taller de Marcos de Madera</span>
+        </div>
+        <p>Trabajos artesanales en madera noble, molduras y marcos personalizados.</p>
+      </div>
+      <div class="footer-links">
+        <button (click)="downloadPdf()" class="btn btn-secondary btn-sm">
+          <ng-icon name="heroArrowDownTray" size="14"></ng-icon>
+          <span>PDF</span>
+        </button>
+        <button (click)="downloadHtml()" class="btn btn-secondary btn-sm">
+          <ng-icon name="heroGlobeAlt" size="14"></ng-icon>
+          <span>HTML</span>
+        </button>
+      </div>
+    </div>
+  </footer>
+</div>
