@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { existsSync, readFileSync } from 'fs';
+import { join } from 'path';
 import { MarcoRepository } from '../../marcos/repositories/marco.repository';
 import { CategoriaRepository } from '../../categorias/repositories/categoria.repository';
 import { FilterMarcoDto } from '../../marcos/dto/filter-marco.dto';
@@ -352,8 +354,38 @@ export class CatalogoService {
 </html>`;
   }
 
+  private async fetchImageBuffer(url?: string): Promise<Buffer | null> {
+    if (!url || typeof url !== 'string') return null;
+    const cleanUrl = url.trim();
+    if (!cleanUrl) return null;
+    try {
+      if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+        const res = await fetch(cleanUrl, { signal: AbortSignal.timeout(5000) });
+        if (!res.ok) return null;
+        const arrayBuf = await res.arrayBuffer();
+        return Buffer.from(arrayBuf);
+      } else if (cleanUrl.startsWith('/uploads/')) {
+        const localPath = join(process.cwd(), cleanUrl);
+        if (existsSync(localPath)) {
+          return readFileSync(localPath);
+        }
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
+
   async generatePdfCatalog(filter?: FilterMarcoDto): Promise<Buffer> {
     const marcos = await this.marcoRepo.findAll(filter);
+
+    // Pre-fetch image buffers in parallel
+    const items = await Promise.all(
+      marcos.map(async (m) => ({
+        marco: m,
+        imageBuffer: await this.fetchImageBuffer(m.imagenUrl),
+      })),
+    );
 
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({ margin: 40, size: 'A4' });
@@ -364,66 +396,88 @@ export class CatalogoService {
       doc.on('error', (err: any) => reject(err));
 
       // Header
-      doc.rect(0, 0, doc.page.width, 100).fill('#5C2C0B');
-      doc.fillColor('#FAF6F0').fontSize(22).font('Helvetica-Bold')
-        .text('TALLER DE MARCOS DE MADERA', 40, 30, { align: 'center' });
-      doc.fontSize(11).font('Helvetica')
-        .text('Catálogo Oficial de Productos y Marcos Artesanales', 40, 60, { align: 'center' });
-
-      doc.moveDown(4);
+      doc.rect(0, 0, doc.page.width, 90).fill('#5C2C0B');
+      doc.fillColor('#FAF6F0').fontSize(20).font('Helvetica-Bold')
+        .text('TALLER DE MARCOS DE MADERA', 40, 26, { align: 'center' });
+      doc.fontSize(10).font('Helvetica')
+        .text('Catálogo Oficial de Productos y Marcos Artesanales', 40, 52, { align: 'center' });
 
       // Metadata box
-      const startY = 120;
-      doc.fillColor('#333333').fontSize(10).font('Helvetica-Bold')
+      const startY = 105;
+      doc.fillColor('#444444').fontSize(9).font('Helvetica-Bold')
         .text(`Fecha: ${new Date().toLocaleDateString('es-ES')}`, 40, startY);
-      doc.text(`Total de Marcos: ${marcos.length}`, 400, startY, { align: 'right' });
+      doc.text(`Total de Marcos: ${items.length}`, 400, startY, { align: 'right' });
 
-      doc.moveTo(40, startY + 18).lineTo(555, startY + 18).strokeColor('#D27D2D').lineWidth(1.5).stroke();
+      doc.moveTo(40, startY + 16).lineTo(555, startY + 16).strokeColor('#D27D2D').lineWidth(1.2).stroke();
 
-      let currentY = startY + 30;
+      let currentY = startY + 26;
 
-      marcos.forEach((marco: Marco, index: number) => {
-        // Page break check
-        if (currentY + 110 > doc.page.height - 50) {
+      items.forEach(({ marco, imageBuffer }, index) => {
+        // Page break check (each card is 92pt)
+        if (currentY + 100 > doc.page.height - 45) {
           doc.addPage();
           currentY = 40;
         }
 
         // Card container
-        doc.roundedRect(40, currentY, 515, 95, 6)
+        doc.roundedRect(40, currentY, 515, 90, 6)
           .fillAndStroke(index % 2 === 0 ? '#FAF6F0' : '#FFFFFF', '#E8DFD8');
 
+        // Image thumbnail container
+        const imgBoxX = 48;
+        const imgBoxY = currentY + 8;
+        const imgBoxW = 74;
+        const imgBoxH = 74;
+        doc.roundedRect(imgBoxX, imgBoxY, imgBoxW, imgBoxH, 4).fillAndStroke('#FFFFFF', '#E8DFD8');
+
+        if (imageBuffer) {
+          try {
+            doc.image(imageBuffer, imgBoxX + 2, imgBoxY + 2, {
+              fit: [imgBoxW - 4, imgBoxH - 4],
+              align: 'center',
+              valign: 'center',
+            });
+          } catch {
+            doc.fillColor('#A89B8C').fontSize(8).font('Helvetica')
+              .text('🖼️ Marco', imgBoxX, imgBoxY + 32, { width: imgBoxW, align: 'center' });
+          }
+        } else {
+          doc.fillColor('#A89B8C').fontSize(8).font('Helvetica')
+            .text('🖼️ Sin Foto', imgBoxX, imgBoxY + 32, { width: imgBoxW, align: 'center' });
+        }
+
         // Text & details
-        doc.fillColor('#5C2C0B').fontSize(13).font('Helvetica-Bold')
-          .text(marco.nombre, 55, currentY + 12);
+        const textX = 132;
+        doc.fillColor('#5C2C0B').fontSize(12).font('Helvetica-Bold')
+          .text(marco.nombre, textX, currentY + 10, { width: 250, ellipsis: true });
 
-        doc.fillColor('#D27D2D').fontSize(9).font('Helvetica-Bold')
-          .text(`CATEGORÍA: ${marco.categoria?.nombre?.toUpperCase() || 'GENERAL'}`, 55, currentY + 30);
+        doc.fillColor('#D27D2D').fontSize(8.5).font('Helvetica-Bold')
+          .text(`CATEGORÍA: ${marco.categoria?.nombre?.toUpperCase() || 'GENERAL'}`, textX, currentY + 26);
 
-        doc.fillColor('#444444').fontSize(10).font('Helvetica')
-          .text(`• Tipo de Madera: `, 55, currentY + 46, { continued: true })
+        doc.fillColor('#444444').fontSize(9).font('Helvetica')
+          .text(`• Tipo de Madera: `, textX, currentY + 40, { continued: true })
           .font('Helvetica-Bold').text(marco.tipoMadera);
 
         doc.font('Helvetica')
-          .text(`• Dimensiones: `, 55, currentY + 62, { continued: true })
+          .text(`• Dimensiones: `, textX, currentY + 54, { continued: true })
           .font('Helvetica-Bold').text(marco.dimensiones);
 
         if (Number(marco.precioCarton) > 0) {
-          doc.fillColor('#78350F').fontSize(9).font('Helvetica-Oblique')
-            .text(`• Opción con cartón: +Bs. ${Number(marco.precioCarton).toFixed(2)}`, 55, currentY + 77);
+          doc.fillColor('#78350F').fontSize(8.5).font('Helvetica-Oblique')
+            .text(`• Con fondo de cartón: +Bs. ${Number(marco.precioCarton).toFixed(2)}`, textX, currentY + 68);
         }
 
-        // Price and Availability
+        // Price and Availability (Right side)
         const statusText = marco.disponible ? 'DISPONIBLE' : 'AGOTADO';
         const statusColor = marco.disponible ? '#2E7D32' : '#C62828';
 
-        doc.fillColor(statusColor).fontSize(9).font('Helvetica-Bold')
-          .text(statusText, 380, currentY + 15, { align: 'right', width: 160 });
+        doc.fillColor(statusColor).fontSize(8.5).font('Helvetica-Bold')
+          .text(statusText, 385, currentY + 12, { align: 'right', width: 160 });
 
         doc.fillColor('#8B4513').fontSize(15).font('Helvetica-Bold')
-          .text(`Bs. ${Number(marco.precio).toFixed(2)}`, 380, currentY + 45, { align: 'right', width: 160 });
+          .text(`Bs. ${Number(marco.precio).toFixed(2)}`, 385, currentY + 44, { align: 'right', width: 160 });
 
-        currentY += 105;
+        currentY += 98;
       });
 
       // Footer
@@ -433,7 +487,7 @@ export class CatalogoService {
         doc.fontSize(8).fillColor('#888888').text(
           `Página ${i + 1} de ${range.count} - Taller de Marcos de Madera`,
           40,
-          doc.page.height - 30,
+          doc.page.height - 25,
           { align: 'center' },
         );
       }
