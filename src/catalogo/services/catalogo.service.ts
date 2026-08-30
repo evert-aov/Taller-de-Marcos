@@ -210,14 +210,14 @@ export class CatalogoService {
       border: 1px solid var(--border);
     }
     .category-section-desc {
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       color: var(--muted);
-      margin: -6px 0 14px 4px;
+      margin: -6px 0 16px 4px;
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 20px;
     }
     .card {
       background: var(--card-bg);
@@ -236,7 +236,7 @@ export class CatalogoService {
     .image-wrapper {
       position: relative;
       width: 100%;
-      height: 190px;
+      height: 220px;
       background: #FAF7F2;
       overflow: hidden;
       display: flex;
@@ -354,12 +354,13 @@ export class CatalogoService {
       font-weight: 800;
       color: var(--primary);
     }
-    @media (max-width: 600px) {
+    @media (max-width: 520px) {
       .grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
       }
       .image-wrapper {
-        height: 170px;
+        height: 160px;
       }
     }
     .actions-bar {

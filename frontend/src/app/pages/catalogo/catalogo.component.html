@@ -47,22 +47,13 @@
         
         <!-- Export / Download Buttons -->
         <div class="export-actions">
-          <button class="btn btn-pdf" (click)="downloadPdf()" title="Descargar catálogo en PDF">
+          <button class="btn btn-pdf" (click)="downloadPdf()" title="Descargar catálogo completo en PDF">
             <ng-icon name="heroArrowDownTray" size="16"></ng-icon>
-            <span>Descargar PDF</span>
+            <span>Descargar Catálogo (PDF)</span>
           </button>
-          <button class="btn btn-html" (click)="downloadHtml()" title="Descargar catálogo en HTML">
+          <button class="btn btn-html" (click)="downloadHtml()" title="Descargar catálogo completo en HTML">
             <ng-icon name="heroGlobeAlt" size="16"></ng-icon>
-            <span>Descargar HTML</span>
-          </button>
-          <button class="btn btn-img" (click)="downloadImage()" [disabled]="downloadingImage()" title="Descargar catálogo en Imagen de Alta Resolución (HD)">
-            @if (downloadingImage()) {
-              <ng-icon name="heroArrowPath" size="16" class="spin-icon"></ng-icon>
-              <span>Generando HD...</span>
-            } @else {
-              <ng-icon name="heroPhoto" size="16"></ng-icon>
-              <span>Descargar Imagen (HD)</span>
-            }
+            <span>Descargar Catálogo (HTML)</span>
           </button>
         </div>
       </div>
@@ -93,65 +84,74 @@
       }
     </div>
 
-    <!-- Filter Control Toolbar: 1 Row with 3 Columns in Desktop -->
-    <div class="filter-toolbar">
-      <!-- Column 1: Search Input -->
-      <div class="filter-col search-col">
-        <div class="search-input-group">
-          <ng-icon name="heroMagnifyingGlass" size="18" class="search-icon"></ng-icon>
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Buscar marco por nombre, madera o tamaño..."
-            [(ngModel)]="searchTerm"
-            (ngModelChange)="onFilterChange()"
-          />
-        </div>
-      </div>
-
-      <!-- Column 2: Wood Select Dropdown -->
-      <div class="filter-col wood-col">
-        <select
-          class="form-control filter-select"
-          [(ngModel)]="selectedWood"
+    <!-- Filters & Search Bar -->
+    <div class="catalog-toolbar">
+      <div class="search-box">
+        <ng-icon name="heroMagnifyingGlass" size="18" class="search-icon"></ng-icon>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
           (ngModelChange)="onFilterChange()"
-        >
-          <option value="">Tipo de Madera: Todos</option>
-          @for (wood of woodTypes(); track wood) {
-            <option [value]="wood">{{ wood }}</option>
-          }
-        </select>
+          placeholder="Buscar por nombre, madera o medida..."
+          class="search-input"
+        />
+        @if (searchTerm) {
+          <button class="clear-btn" (click)="searchTerm = ''; onFilterChange()">
+            <ng-icon name="heroXMark" size="16"></ng-icon>
+          </button>
+        }
       </div>
 
-      <!-- Column 3: Availability Toggle & Clear -->
-      <div class="filter-col availability-col">
-        <label class="availability-toggle">
+      <div class="filters-group">
+        <!-- Wood Type Filter -->
+        <div class="select-wrap">
+          <select [(ngModel)]="selectedWood" (ngModelChange)="onFilterChange()" class="filter-select">
+            <option value="">Todas las Maderas</option>
+            @for (wood of woodTypes(); track wood) {
+              <option [value]="wood">{{ wood }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Sort Filter -->
+        <div class="select-wrap">
+          <select [(ngModel)]="sortBy" (ngModelChange)="onFilterChange()" class="filter-select">
+            <option value="recientes">Más Recientes</option>
+            <option value="precio_asc">Precio: Menor a Mayor</option>
+            <option value="precio_desc">Precio: Mayor a Menor</option>
+            <option value="nombre_asc">Nombre: A - Z</option>
+          </select>
+        </div>
+
+        <!-- Only Available Toggle -->
+        <label class="toggle-label" title="Mostrar solo marcos con stock disponible">
           <input
             type="checkbox"
             [(ngModel)]="onlyAvailable"
             (ngModelChange)="onFilterChange()"
           />
-          <span>Solo Disponibles</span>
+          <span class="toggle-text">Solo Disponibles</span>
         </label>
 
+        <!-- Reset Button -->
         @if (searchTerm || selectedCategory || selectedWood || onlyAvailable) {
-          <button class="btn btn-secondary btn-sm btn-clear" (click)="resetFilters()" title="Limpiar filtros">
-            <ng-icon name="heroArrowPath" size="14"></ng-icon>
-            <span>Limpiar</span>
+          <button class="btn btn-secondary btn-icon" (click)="resetFilters()" title="Limpiar todos los filtros">
+            <ng-icon name="heroArrowPath" size="16"></ng-icon>
           </button>
         }
       </div>
     </div>
 
-    <!-- Product Grid State -->
+    <!-- Loading State -->
     @if (loading()) {
       <div class="catalog-loading">
         <div class="spinner"></div>
-        <p>Cargando marcos de madera...</p>
+        <p>Cargando nuestro catálogo de marcos artesanales...</p>
       </div>
     } @else if (marcos().length === 0) {
+      <!-- Empty State -->
       <div class="catalog-empty">
-        <div class="empty-icon-box">
+        <div class="empty-icon">
           <ng-icon name="heroPhoto" size="56"></ng-icon>
         </div>
         <h3>No se encontraron marcos con los filtros seleccionados</h3>
@@ -183,9 +183,27 @@
                 }
               </div>
             </div>
-            <span class="cat-group-count">
-              {{ group.marcos.length }} {{ group.marcos.length === 1 ? 'modelo' : 'modelos' }}
-            </span>
+            <div class="cat-group-actions">
+              <button
+                class="btn-cat-dl btn-cat-pdf"
+                (click)="downloadCategoryPdf(group.categoryId)"
+                title="Descargar esta categoría en PDF"
+              >
+                <ng-icon name="heroArrowDownTray" size="13"></ng-icon>
+                <span>PDF</span>
+              </button>
+              <button
+                class="btn-cat-dl btn-cat-html"
+                (click)="downloadCategoryHtml(group.categoryId)"
+                title="Descargar esta categoría en HTML"
+              >
+                <ng-icon name="heroGlobeAlt" size="13"></ng-icon>
+                <span>HTML</span>
+              </button>
+              <span class="cat-group-count">
+                {{ group.marcos.length }} {{ group.marcos.length === 1 ? 'modelo' : 'modelos' }}
+              </span>
+            </div>
           </div>
 
           <!-- Frames Grid for this category -->

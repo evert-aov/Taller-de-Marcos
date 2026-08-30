@@ -59,14 +59,15 @@ export class CatalogoComponent implements OnInit, OnDestroy {
   // Grouped marcos by category computed
   marcosByCategory = computed(() => {
     const list = this.marcos();
-    const groups: { categoryName: string; categoryDescription?: string; marcos: Marco[] }[] = [];
-    const map = new Map<string, { categoryName: string; categoryDescription?: string; marcos: Marco[] }>();
+    const groups: { categoryId?: string; categoryName: string; categoryDescription?: string; marcos: Marco[] }[] = [];
+    const map = new Map<string, { categoryId?: string; categoryName: string; categoryDescription?: string; marcos: Marco[] }>();
 
     for (const marco of list) {
+      const catId = marco.categoriaId || marco.categoria?.id;
       const catName = marco.categoria?.nombre || 'Colección General';
       const catDesc = marco.categoria?.descripcion;
       if (!map.has(catName)) {
-        const group = { categoryName: catName, categoryDescription: catDesc, marcos: [] };
+        const group = { categoryId: catId, categoryName: catName, categoryDescription: catDesc, marcos: [] };
         map.set(catName, group);
         groups.push(group);
       }
@@ -213,8 +214,6 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     };
   }
 
-  downloadingImage = signal<boolean>(false);
-
   downloadPdf() {
     const url = this.catalogoService.getPdfUrl(this.currentFilter);
     window.open(url, '_blank');
@@ -230,40 +229,21 @@ export class CatalogoComponent implements OnInit, OnDestroy {
     document.body.removeChild(a);
   }
 
-  async downloadImage() {
-    if (this.downloadingImage()) return;
-    this.downloadingImage.set(true);
+  downloadCategoryPdf(categoryId?: string) {
+    const filter: FilterMarco = { ...this.currentFilter, categoriaId: categoryId };
+    const url = this.catalogoService.getPdfUrl(filter);
+    window.open(url, '_blank');
+  }
 
-    try {
-      const html2canvas = (await import('html2canvas')).default;
-      const element = document.getElementById('catalogExportArea');
-      if (!element) {
-        throw new Error('No se encontró el contenedor del catálogo');
-      }
-
-      const canvas = await html2canvas(element, {
-        scale: 2.5, // High resolution (Retina / 2.5x DPI)
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#FAF6F0',
-        logging: false,
-        scrollX: 0,
-        scrollY: -window.scrollY,
-      });
-
-      const dataUrl = canvas.toDataURL('image/png', 1.0);
-      const link = document.createElement('a');
-      link.download = `catalogo-marcos-hd-${new Date().toISOString().slice(0, 10)}.png`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) {
-      console.error('Error al generar imagen del catálogo', err);
-      alert('Error al generar la imagen en alta resolución. Intente nuevamente.');
-    } finally {
-      this.downloadingImage.set(false);
-    }
+  downloadCategoryHtml(categoryId?: string) {
+    const filter: FilterMarco = { ...this.currentFilter, categoriaId: categoryId };
+    const url = this.catalogoService.getHtmlUrl(filter);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'catalogo-categoria.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   openDetail(marco: Marco) {

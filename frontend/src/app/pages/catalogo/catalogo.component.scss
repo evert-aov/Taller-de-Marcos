@@ -606,34 +606,72 @@
     }
   }
 
-  .cat-group-count {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--primary);
-    background: var(--bg-subtle);
-    padding: 4px 10px;
-    border-radius: var(--radius-full);
-    border: 1px solid var(--border);
-    white-space: nowrap;
+  .cat-group-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    .btn-cat-dl {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &.btn-cat-pdf {
+        background: #FEF2F2;
+        color: #B91C1C;
+        border: 1px solid #FECACA;
+
+        &:hover {
+          background: #B91C1C;
+          color: #FFFFFF;
+        }
+      }
+
+      &.btn-cat-html {
+        background: #F0F9FF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+
+        &:hover {
+          background: #0369A1;
+          color: #FFFFFF;
+        }
+      }
+    }
+
+    .cat-group-count {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--bg-subtle);
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
   }
 }
 
 /* ==========================================================================
-   Frames Product Grid - Responsive & Spacious
+   Frames Product Grid - Multi-column Desktop Style Everywhere
    ========================================================================== */
 .frames-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 28px;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 20px;
   width: 100%;
 
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 18px;
-  }
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
+  @media (max-width: 520px) {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
   }
 }
 
